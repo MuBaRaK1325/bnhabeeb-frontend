@@ -53,7 +53,21 @@
     <strong id="walletBalance">₦0</strong>
     <button onclick="copyAccount()">Copy Account Number</button>
   </div>
+<div id="adminPanel" style="display:none">
 
+<h3>Admin Withdrawal</h3>
+
+<input id="withdrawAmount" placeholder="Amount">
+
+<input id="bankName" placeholder="Bank">
+
+<input id="accountNumber" placeholder="Account Number">
+
+<button onclick="adminWithdraw()">Withdraw</button>
+<button id="adminWithdrawBtn" style="display:none;">
+Withdraw Profit
+</button>
+</div>
   <!-- QUICK ACTIONS -->
   <div class="quick-actions">
     <button onclick="location.href='data.html'">💳 Buy Data</button>

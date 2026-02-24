@@ -1,178 +1,202 @@
-const backendUrl = "https://mayconnect-backend-1.onrender.com";
+const backendUrl = "https://mayconnect-backend-1.onrender.com"
 
-const walletBalance = document.getElementById("walletBalance");
-const greeting = document.getElementById("greeting");
-const plansGrid = document.getElementById("plansGrid");
+const token = () => localStorage.getItem("token")
 
-let selectedPlan = null;
+const $ = id => document.getElementById(id)
 
-/* ================= INIT ================= */
+/* ================= AUTH GUARD ================= */
 
-document.addEventListener("DOMContentLoaded", async () => {
+if (!token() && !location.pathname.includes("login"))
+location.href = "login.html"
 
-  const token = localStorage.getItem("token");
+/* ================= DASHBOARD LOAD ================= */
 
-  const name = localStorage.getItem("name");
+async function loadDashboard(){
 
-  if (greeting) {
-    greeting.textContent = `Hello, ${name}`;
-  }
+const res = await fetch(`${backendUrl}/api/wallet`,{
+headers:{Authorization:`Bearer ${token()}`}
+})
 
-  if (walletBalance && token) {
+const data = await res.json()
 
-    const res = await fetch(`${backendUrl}/api/wallet`, {
-      headers: { Authorization: `Bearer ${token}` }
-    });
+$("walletBalance").textContent=`₦${data.wallet_balance}`
 
-    const data = await res.json();
+$("greeting").textContent=`Hello, ${data.name} 👋`
 
-    walletBalance.textContent = `₦${data.balance}`;
-  }
+if(data.is_admin){
 
-  if (plansGrid) {
-    loadPlans();
-  }
+document.getElementById("adminPanel").style.display="block"
 
-});
+}
+
+}
 
 /* ================= LOAD PLANS ================= */
 
-async function loadPlans() {
+async function loadPlans(){
 
-  const res = await fetch(`${backendUrl}/api/plans`);
+const res = await fetch(`${backendUrl}/api/plans`,{
+headers:{Authorization:`Bearer ${token()}`}
+})
 
-  const plans = await res.json();
+const plans = await res.json()
 
-  plansGrid.innerHTML = "";
+const grid = $("plansGrid")
 
-  plans.forEach(plan => {
+grid.innerHTML=""
 
-    const div = document.createElement("div");
+plans.forEach(p=>{
 
-    div.className = "plan-card";
+const card=document.createElement("div")
 
-    div.innerHTML = `
-      <h4>${plan.network}</h4>
-      <small>${plan.name}</small>
-      <div class="price">₦${plan.price}</div>
-    `;
+card.className="plan-card"
 
-    div.onclick = () => {
+card.innerHTML=`
+<h4>${p.network}</h4>
+<p>${p.name}</p>
+<strong>₦${p.price}</strong>
+`
 
-      document
-        .querySelectorAll(".plan-card")
-        .forEach(p => p.classList.remove("selected"));
+card.onclick=()=>selectPlan(p)
 
-      div.classList.add("selected");
+grid.appendChild(card)
 
-      selectedPlan = plan;
+})
 
-      document
-        .getElementById("confirmOrderBtn")
-        ?.classList.remove("hidden");
+}
 
-    };
+/* ================= SELECT PLAN ================= */
 
-    plansGrid.appendChild(div);
+let selectedPlan=null
 
-  });
+function selectPlan(plan){
+
+selectedPlan=plan
+
+$("confirmOrderBtn").classList.remove("hidden")
 
 }
 
 /* ================= PURCHASE ================= */
 
-async function confirmOrder() {
+async function confirmOrder(){
 
-  const phone = document.getElementById("phone")?.value;
+const phone=$("phone").value
 
-  if (!selectedPlan) {
-    alert("Select plan");
-    return;
-  }
+if(!phone)return alert("Enter phone")
 
-  const token = localStorage.getItem("token");
+const res = await fetch(`${backendUrl}/api/purchase`,{
 
-  const res = await fetch(`${backendUrl}/api/purchase`, {
+method:"POST",
 
-    method: "POST",
+headers:{
+"Content-Type":"application/json",
+Authorization:`Bearer ${token()}`
+},
 
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${token}`
-    },
+body:JSON.stringify({
+plan:selectedPlan.plan_id,
+phone
+})
 
-    body: JSON.stringify({
-      planId: selectedPlan.id,
-      phone
-    })
+})
 
-  });
+const data=await res.json()
 
-  const data = await res.json();
+if(res.ok){
 
-  if (data.success) {
-    alert("Purchase successful");
-    location.reload();
-  } else {
-    alert(data.message);
-  }
+document.getElementById("successSound").play()
+
+alert("Purchase successful")
+
+}else{
+
+alert(data.error)
+
+}
 
 }
 
 /* ================= SET PIN ================= */
 
-async function submitSetPin() {
+async function submitPin(){
 
-  const inputs = document.querySelectorAll("#setPinModal input");
+const pin=[...document.querySelectorAll(".pin-inputs input")]
+.map(i=>i.value)
+.join("")
 
-  let pin = "";
+const res=await fetch(`${backendUrl}/api/set-pin`,{
 
-  inputs.forEach(i => pin += i.value);
+method:"POST",
 
-  const token = localStorage.getItem("token");
+headers:{
+"Content-Type":"application/json",
+Authorization:`Bearer ${token()}`
+},
 
-  await fetch(`${backendUrl}/api/set-pin`, {
+body:JSON.stringify({pin})
 
-    method: "POST",
+})
 
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${token}`
-    },
+if(res.ok){
 
-    body: JSON.stringify({ pin })
+alert("PIN saved")
 
-  });
-
-  alert("PIN saved");
-
-  document.getElementById("setPinModal").classList.add("hidden");
+}
 
 }
 
 /* ================= ADMIN WITHDRAW ================= */
 
-async function adminWithdraw() {
+async function adminWithdraw(){
 
-  const amount = prompt("Amount");
+const amount=$("withdrawAmount").value
+const bank=$("bankName").value
+const account=$("accountNumber").value
 
-  const token = localStorage.getItem("token");
+const res=await fetch(`${backendUrl}/api/admin/withdraw`,{
 
-  const res = await fetch(`${backendUrl}/api/admin/withdraw`, {
+method:"POST",
 
-    method: "POST",
+headers:{
+"Content-Type":"application/json",
+Authorization:`Bearer ${token()}`
+},
 
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${token}`
-    },
+body:JSON.stringify({amount,bank,account})
 
-    body: JSON.stringify({ amount })
+})
 
-  });
+const data=await res.json()
 
-  const data = await res.json();
-
-  alert(data.message);
+alert(data.message || data.error)
 
 }
+
+/* ================= MORE ================= */
+
+function toggleMore(){
+
+document.getElementById("morePanel").classList.toggle("hidden")
+
+}
+
+/* ================= INIT ================= */
+
+document.addEventListener("DOMContentLoaded",()=>{
+
+if(location.pathname.includes("dashboard")){
+
+document.getElementById("welcomeSound")?.play()
+
+loadDashboard()
+
+}
+
+if(document.getElementById("plansGrid")){
+
+loadPlans()
+
+}
+
+})
