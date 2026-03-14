@@ -38,19 +38,38 @@ successSound.play().catch(()=>{})
 }
 
 // ========================================
-// TOAST NOTIFICATIONS
+// SPLASH LOADER
 // ========================================
 
-function showToast(message){
+function hideLoader(){
+
+const loader = document.getElementById("splashLoader")
+
+if(!loader) return
+
+loader.classList.add("hide")
+
+setTimeout(()=>{
+loader.style.display="none"
+},500)
+
+}
+
+// ========================================
+// TOAST
+// ========================================
+
+function showToast(msg){
 
 const toast=document.createElement("div")
-
 toast.className="toast"
-toast.innerText=message
+toast.innerText=msg
 
 document.body.appendChild(toast)
 
-setTimeout(()=>{ toast.remove() },4000)
+setTimeout(()=>{
+toast.remove()
+},4000)
 
 }
 
@@ -58,7 +77,7 @@ setTimeout(()=>{ toast.remove() },4000)
 // NETWORK PREFIX
 // ========================================
 
-const NETWORK_PREFIX = {
+const NETWORK_PREFIX={
 
 MTN:["0803","0806","0813","0816","0703","0706","0903","0906","0913","0916"],
 AIRTEL:["0802","0808","0812","0701","0708","0901","0902","0907"],
@@ -93,9 +112,9 @@ return phone
 
 function detectNetwork(phone){
 
-phone = phone.replace(/\D/g,"")
+phone=phone.replace(/\D/g,"")
 
-const prefix = phone.substring(0,4)
+const prefix=phone.substring(0,4)
 
 for(const net in NETWORK_PREFIX){
 
@@ -127,14 +146,10 @@ GLO:"logos/glo.png",
 }
 
 if(network && logos[network]){
-
 logo.src=logos[network]
 logo.style.display="block"
-
 }else{
-
 logo.style.display="none"
-
 }
 
 }
@@ -166,7 +181,7 @@ loadPlans(network)
 }
 
 // ========================================
-// CONTACT STORAGE
+// CONTACT SAVE
 // ========================================
 
 function saveRecipient(phone){
@@ -248,6 +263,33 @@ window.location.href="dashboard.html"
 }
 
 // ========================================
+// BIOMETRIC LOGIN
+// ========================================
+
+async function biometricLogin(){
+
+if(!window.PublicKeyCredential){
+alert("Biometric not supported")
+return
+}
+
+alert("Biometric login coming from saved session")
+
+const savedToken = localStorage.getItem("token")
+
+if(savedToken){
+
+window.location.href="dashboard.html"
+
+}else{
+
+alert("No biometric session found")
+
+}
+
+}
+
+// ========================================
 // DASHBOARD
 // ========================================
 
@@ -269,13 +311,7 @@ if(name){
 name.innerText=`Hello 👋 ${user.username}`
 }
 
-const wallet=document.getElementById("walletBalance")
-
-if(wallet){
-
 animateBalance(Number(user.wallet_balance||0))
-
-}
 
 if(user.is_admin){
 
@@ -291,12 +327,14 @@ loadTransactions()
 
 loadRecipients()
 
+hideLoader()
+
 }
 
-loadDashboard()
+window.addEventListener("load",loadDashboard)
 
 // ========================================
-// BALANCE ANIMATION
+// WALLET ANIMATION
 // ========================================
 
 function animateBalance(balance){
@@ -359,8 +397,6 @@ container.innerHTML+=`
 
 <small>${new Date(t.created_at).toLocaleString()}</small>
 
-<span class="status">${t.status||"Successful"}</span>
-
 <button onclick="repeatPurchase('${t.phone}')">Repeat</button>
 
 </div>
@@ -408,16 +444,6 @@ const plans=await res.json()
 container.innerHTML=""
 
 if(!Array.isArray(plans)) return
-
-// SMART BEST PLAN
-const best=plans[0]
-
-if(best){
-
-document.getElementById("bestPlan").innerText=
-`🔥 Recommended: ${best.plan_name} for ₦${best.price}`
-
-}
 
 plans.forEach(plan=>{
 
@@ -473,38 +499,30 @@ if(purchaseType==="data"){
 
 endpoint="/api/buy-data"
 
-body={
-plan_id:selectedPlan,
-phone,
-pin
-}
+body={plan_id:selectedPlan,phone,pin}
 
 }
 
 if(purchaseType==="airtime"){
 
 const amount=document.getElementById("airtimeAmount").value
-
 const network=detectNetwork(phone)
 
 endpoint="/api/buy-airtime"
 
-body={
-network,
-phone,
-amount,
-pin
-}
+body={network,phone,amount,pin}
 
 }
 
 const res=await fetch(`${API}${endpoint}`,{
 
 method:"POST",
+
 headers:{
 "Content-Type":"application/json",
 Authorization:`Bearer ${token}`
 },
+
 body:JSON.stringify(body)
 
 })
@@ -520,13 +538,7 @@ saveRecipient(phone)
 
 playSuccess()
 
-if(purchaseType==="data"){
-showToast("📶 Data delivered successfully")
-}
-
-if(purchaseType==="airtime"){
-showToast("✅ Airtime sent successfully")
-}
+showToast("✅ Purchase Successful")
 
 closePinModal()
 
@@ -542,7 +554,6 @@ async function adminWithdraw(){
 
 const bank=document.getElementById("bankName").value
 const account_number=document.getElementById("accountNumber").value
-const account_name=document.getElementById("accountName").value
 const amount=document.getElementById("withdrawAmount").value
 
 const res=await fetch(`${API}/api/admin/withdraw`,{
@@ -554,7 +565,7 @@ headers:{
 Authorization:`Bearer ${token}`
 },
 
-body:JSON.stringify({bank,account_number,account_name,amount})
+body:JSON.stringify({bank,account_number,amount})
 
 })
 
@@ -568,6 +579,25 @@ return
 showToast("💰 Withdrawal successful")
 
 loadDashboard()
+
+}
+
+// ========================================
+// SUPPORT
+// ========================================
+
+function contactSupport(){
+
+window.open(
+"https://wa.me/2348117988561",
+"_blank"
+)
+
+}
+
+function callSupport(){
+
+window.location.href="tel:08117988561"
 
 }
 
