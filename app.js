@@ -2,36 +2,41 @@ const API = "https://mayconnect-backend-1.onrender.com"
 const token = localStorage.getItem("token")
 
 /* ==============================
-GLOBAL ERROR HANDLER (NO CRASH)
+GLOBAL ERROR HANDLER
 ============================== */
 
-window.onerror = function(msg, url, line, col, error){
-console.error("Global Error:", msg)
+window.onerror = function(){
 showToast("Something went wrong ⚠️")
 hideLoader()
 return true
 }
 
-window.onunhandledrejection = function(e){
-console.error("Promise Error:", e.reason)
+window.onunhandledrejection = function(){
 showToast("Network issue ⚠️")
 hideLoader()
 }
 
 /* ==============================
-OFFLINE DETECTION
+SAFE JSON PARSER
 ============================== */
 
-window.addEventListener("offline",()=>{
-showToast("⚠️ No internet connection")
-})
+async function safeJSON(res){
 
-window.addEventListener("online",()=>{
-showToast("✅ Back online")
-})
+const text = await res.text()
+
+try{
+return JSON.parse(text)
+}catch(e){
+console.error("Invalid JSON:", text)
+showToast("Server error ⚠️")
+hideLoader()
+return null
+}
+
+}
 
 /* ==============================
-SMART FETCH (AUTO RETRY)
+SMART FETCH (RETRY)
 ============================== */
 
 async function smartFetch(url, options={}, retries=2){
@@ -40,11 +45,9 @@ try{
 
 const res = await fetch(url, options)
 
-if(!res.ok){
-if(retries > 0){
+if(!res.ok && retries > 0){
 await new Promise(r=>setTimeout(r,1000))
 return smartFetch(url, options, retries-1)
-}
 }
 
 return res
@@ -57,9 +60,17 @@ return smartFetch(url, options, retries-1)
 }
 
 throw err
+
 }
 
 }
+
+/* ==============================
+OFFLINE DETECTION
+============================== */
+
+window.addEventListener("offline",()=>showToast("⚠️ No internet"))
+window.addEventListener("online",()=>showToast("✅ Back online"))
 
 /* ==============================
 PAGE GUARD
@@ -94,11 +105,10 @@ successSound.play().catch(()=>{})
 }
 
 /* ==============================
-LOADER (SAFE)
+LOADER
 ============================== */
 
 function hideLoader(){
-
 const loader=document.getElementById("splashLoader")
 if(!loader) return
 
@@ -107,31 +117,25 @@ loader.classList.add("hide")
 setTimeout(()=>{
 loader.style.display="none"
 },500)
-
 }
 
-/* force hide loader after 5s */
-
-setTimeout(()=>{ hideLoader() },5000)
+/* NEVER STUCK AGAIN */
+setTimeout(()=>hideLoader(),5000)
 
 /* ==============================
 TOAST
 ============================== */
 
 function showToast(msg){
-
-const toast=document.createElement("div")
-toast.className="toast"
-toast.innerText=msg
-
-document.body.appendChild(toast)
-
-setTimeout(()=>toast.remove(),3000)
-
+const t=document.createElement("div")
+t.className="toast"
+t.innerText=msg
+document.body.appendChild(t)
+setTimeout(()=>t.remove(),3000)
 }
 
 /* ==============================
-NETWORK PREFIX
+NETWORK + PHONE
 ============================== */
 
 const NETWORK_PREFIX={
@@ -141,51 +145,25 @@ GLO:["0805","0807","0811","0705","0905"],
 "9MOBILE":["0809","0817","0818","0908","0909"]
 }
 
-/* ==============================
-PHONE FORMAT
-============================== */
+function normalizePhone(p){ return p.replace(/\D/g,"") }
 
-function normalizePhone(phone){
-return phone.replace(/\D/g,"")
+function formatPhone(p){
+p=normalizePhone(p)
+if(p.startsWith("0")) return "+234"+p.slice(1)
+if(p.startsWith("234")) return "+"+p
+return p
 }
 
-function formatPhone(phone){
-
-phone=normalizePhone(phone)
-
-if(phone.startsWith("0")) return "+234"+phone.substring(1)
-if(phone.startsWith("234")) return "+"+phone
-
-return phone
-
+function detectNetwork(p){
+p=normalizePhone(p)
+const prefix=p.substring(0,4)
+for(const n in NETWORK_PREFIX){
+if(NETWORK_PREFIX[n].includes(prefix)) return n
 }
-
-/* ==============================
-DETECT NETWORK
-============================== */
-
-function detectNetwork(phone){
-
-phone=normalizePhone(phone)
-
-const prefix=phone.substring(0,4)
-
-for(const net in NETWORK_PREFIX){
-if(NETWORK_PREFIX[net].includes(prefix)){
-return net
-}
-}
-
 return null
-
 }
-
-/* ==============================
-NETWORK LOGO
-============================== */
 
 function showNetworkLogo(network){
-
 const logo=document.getElementById("networkLogo")
 if(!logo) return
 
@@ -202,19 +180,13 @@ logo.style.display="block"
 }else{
 logo.style.display="none"
 }
-
 }
-
-/* ==============================
-PHONE INPUT
-============================== */
 
 let typingTimer=null
 
 function handlePhoneInput(input){
 
 let phone=normalizePhone(input.value)
-
 if(phone.length>11) phone=phone.slice(0,11)
 
 input.value=phone
@@ -224,15 +196,9 @@ clearTimeout(typingTimer)
 typingTimer=setTimeout(()=>{
 
 if(phone.length>=4){
-
-const network=detectNetwork(phone)
-
-showNetworkLogo(network)
-
-if(network){
-loadPlans(network)
-}
-
+const net=detectNetwork(phone)
+showNetworkLogo(net)
+if(net) loadPlans(net)
 }
 
 },400)
@@ -240,22 +206,19 @@ loadPlans(network)
 }
 
 /* ==============================
-SAVE RECIPIENT (FIXED)
+SAVE CONTACT
 ============================== */
 
 function saveRecipient(phone){
-
-let contacts=JSON.parse(localStorage.getItem("recipients")||"[]")
-
-if(!contacts.includes(phone)){
-contacts.push(phone)
-localStorage.setItem("recipients",JSON.stringify(contacts))
+let list=JSON.parse(localStorage.getItem("recipients")||"[]")
+if(!list.includes(phone)){
+list.push(phone)
+localStorage.setItem("recipients",JSON.stringify(list))
 }
-
 }
 
 /* ==============================
-LOGIN
+LOGIN (FIXED)
 ============================== */
 
 async function login(){
@@ -271,19 +234,20 @@ headers:{"Content-Type":"application/json"},
 body:JSON.stringify({username,password})
 })
 
-const data=await res.json()
+const data=await safeJSON(res)
+if(!data) return
 
 if(!res.ok){
-alert(data.message)
+alert(data.message || "Login failed")
 return
 }
 
 localStorage.setItem("token",data.token)
-
 window.location.replace("dashboard.html")
 
-}catch(err){
+}catch{
 showToast("Login failed ⚠️")
+hideLoader()
 }
 
 }
@@ -302,26 +266,34 @@ const res=await smartFetch("${API}/api/me",{
 headers:{Authorization:"Bearer ${token}"}
 })
 
-if(!res.ok) throw new Error()
-
-const user=await res.json()
+const user=await safeJSON(res)
+if(!user) return
 
 const name=document.getElementById("usernameDisplay")
 if(name){
 name.innerText="Hello 👋 ${user.username}"
 }
 
+/* wallet */
 animateBalance(Number(user.wallet_balance||0))
 
+/* profit balance (ADMIN) */
 if(user.is_admin){
+
 const adminPanel=document.getElementById("adminPanel")
 if(adminPanel) adminPanel.style.display="block"
+
+const profit=document.getElementById("profitBalance")
+if(profit){
+profit.innerText="₦"+Number(user.profit_balance||0).toLocaleString()
+}
+
 }
 
 loadTransactions()
 playWelcome()
 
-}catch(err){
+}catch{
 
 showToast("Session expired")
 
@@ -353,13 +325,13 @@ if(!el) return
 let start=0
 const step=balance/40
 
-const timer=setInterval(()=>{
+const t=setInterval(()=>{
 
 start+=step
 
 if(start>=balance){
 el.innerText="₦"+balance.toLocaleString()
-clearInterval(timer)
+clearInterval(t)
 }else{
 el.innerText="₦"+Math.floor(start).toLocaleString()
 }
@@ -383,8 +355,7 @@ const res=await smartFetch("${API}/api/plans?network=${network}",{
 headers:{Authorization:"Bearer ${token}"}
 })
 
-let plans=await res.json()
-
+let plans=await safeJSON(res)
 if(!Array.isArray(plans)) return
 
 const unique=[...new Map(plans.map(p=>[p.plan_id,p])).values()]
@@ -392,16 +363,15 @@ unique.sort((a,b)=>a.price-b.price)
 
 container.innerHTML=""
 
-unique.forEach(plan=>{
+unique.forEach(p=>{
 container.innerHTML+=`
 
 <div class="planCard">
-<h4>${plan.plan_name}</h4>
-<p>₦${Number(plan.price).toLocaleString()}</p>
-<button onclick="openPinModal(${plan.plan_id},'data')">Buy</button>
-</div>
-`
-})}catch(err){
+<h4>${p.plan_name}</h4>
+<p>₦${Number(p.price).toLocaleString()}</p>
+<button onclick="openPinModal(${p.plan_id},'data')">Buy</button>
+</div>`
+})}catch{
 showToast("Failed to load plans")
 }
 
@@ -455,7 +425,8 @@ Authorization:"Bearer ${token}"
 body:JSON.stringify(body)
 })
 
-const data=await res.json()
+const data=await safeJSON(res)
+if(!data) return
 
 if(!res.ok){
 alert(data.message)
@@ -472,7 +443,7 @@ if(page.includes("dashboard")){
 loadDashboard()
 }
 
-}catch(err){
+}catch{
 showToast("Transaction failed ⚠️")
 }
 
