@@ -11,6 +11,105 @@
 <style>
 
 /* =========================
+GENERAL THEME
+========================= */
+
+body{
+background:#000;
+color:white;
+font-family:Arial;
+}
+
+/* =========================
+PROFILE PANEL
+========================= */
+
+.profilePanel{
+position:fixed;
+bottom:0;
+left:0;
+width:100%;
+height:100%;
+background:#000;
+z-index:5000;
+transform:translateY(100%);
+transition:0.4s;
+padding:20px;
+overflow:auto;
+}
+
+.profilePanel.show{
+transform:translateY(0);
+border-top:2px solid #3b78e7;
+}
+
+.avatar{
+width:70px;
+height:70px;
+border-radius:50%;
+background:#3b78e7;
+display:flex;
+align-items:center;
+justify-content:center;
+font-size:28px;
+margin:auto;
+}
+
+.profileBtn{
+width:100%;
+padding:14px;
+margin-top:10px;
+background:#050b18;
+border:1px solid #3b78e7;
+border-radius:10px;
+color:white;
+text-align:left;
+}
+
+/* =========================
+PIN MODAL
+========================= */
+
+.pinModal{
+position:fixed;
+top:0;
+left:0;
+width:100%;
+height:100%;
+background:#000c;
+display:none;
+align-items:center;
+justify-content:center;
+z-index:6000;
+}
+
+.pinBox{
+background:#050b18;
+padding:25px;
+border-radius:12px;
+border:1px solid #3b78e7;
+text-align:center;
+}
+
+.pinInputs{
+display:flex;
+gap:10px;
+justify-content:center;
+margin-top:15px;
+}
+
+.pinInputs input{
+width:45px;
+height:50px;
+font-size:22px;
+text-align:center;
+border-radius:8px;
+border:1px solid #3b78e7;
+background:black;
+color:white;
+}
+
+/* =========================
 SKELETON LOADER
 ========================= */
 
@@ -40,56 +139,8 @@ margin-top:10px;
 box-shadow:0 4px 15px rgba(0,0,0,0.4);
 }
 
-.transaction-card h4{
-margin:0;
-font-size:14px;
-}
-
-.transaction-card p{
-margin:4px 0;
-font-weight:bold;
-}
-
-.transaction-card small{
-opacity:0.7;
-}
-
 /* =========================
-FLOATING QUICK ACTIONS
-========================= */
-
-.quickActions{
-position:fixed;
-bottom:90px;
-right:20px;
-display:flex;
-flex-direction:column;
-gap:12px;
-z-index:1000;
-}
-
-.quickActions button{
-background:#3b78e7;
-border:none;
-color:white;
-width:65px;
-height:65px;
-border-radius:50%;
-display:flex;
-flex-direction:column;
-align-items:center;
-justify-content:center;
-font-size:20px;
-box-shadow:0 5px 20px rgba(0,0,0,0.4);
-cursor:pointer;
-}
-
-.quickActions span{
-font-size:10px;
-}
-
-/* =========================
-FINTECH BOTTOM NAV
+BOTTOM NAV
 ========================= */
 
 .bottomNav{
@@ -102,7 +153,7 @@ background:#08142c;
 display:flex;
 justify-content:space-around;
 align-items:center;
-border-top:1px solid rgba(255,255,255,0.05);
+border-top:2px solid #3b78e7;
 }
 
 .bottomNav button{
@@ -113,55 +164,10 @@ display:flex;
 flex-direction:column;
 align-items:center;
 font-size:20px;
-cursor:pointer;
 }
 
 .bottomNav span{
 font-size:11px;
-}
-
-/* =========================
-POPULAR PLAN CARD
-========================= */
-
-.popular-plan{
-background:#112c64;
-padding:12px;
-border-radius:12px;
-margin-top:15px;
-text-align:center;
-}
-
-.popular-plan button{
-margin-top:10px;
-padding:10px 14px;
-border:none;
-background:#3b78e7;
-color:white;
-border-radius:8px;
-cursor:pointer;
-}
-
-/* =========================
-SUPPORT BOX
-========================= */
-
-.support-box{
-margin-top:20px;
-background:#0c1a36;
-padding:15px;
-border-radius:12px;
-text-align:center;
-}
-
-.support-box button{
-margin-top:8px;
-padding:10px 14px;
-border:none;
-border-radius:8px;
-background:#3b78e7;
-color:white;
-cursor:pointer;
 }
 
 </style>
@@ -170,138 +176,14 @@ cursor:pointer;
 
 <body>
 
-<!-- SPLASH -->
-
-<div id="splashLoader" class="splash-loader">
-
-<div class="splash-content">
-
-<div class="splash-ring"></div>
-
-<img src="images/logo.png">
-
-</div>
-
-</div>
-
-<!-- LOGO -->
-
-<div class="logo-circle">
-
-<img src="images/logo.png">
-
-</div>
-
-<!-- GREETING -->
-
-<div style="text-align:center;margin-bottom:1rem;">
-
-<h3 id="usernameDisplay">Hello 👋 User</h3>
-
-</div>
-
-<!-- SOUNDS -->
-
-<audio id="welcomeSound" src="sounds/welcome.mp3"></audio>
-<audio id="successSound" src="sounds/success.mp3"></audio>
-
-<!-- MORE PANEL -->
-
-<div id="morePanel" class="more-panel hidden">
-
-<button onclick="openTab('setPinSection')">Set Transaction PIN</button>
-
-<button onclick="openTab('changePinSection')">Change PIN</button>
-
-<button onclick="openTab('changePasswordSection')">Change Password</button>
-
-<button onclick="forgotPassword()">Forgot Password</button>
-
-<button onclick="logout()">Logout</button>
-
-<button onclick="toggleMore()">Close</button>
-
-</div>
-
-<!-- MAIN DASHBOARD -->
-
-<div id="homeTab" class="dashboard-content">
-
 <!-- WALLET -->
 
 <div class="wallet-card">
-
 <p>Wallet Balance</p>
-
 <strong id="walletBalance">₦0</strong>
-
-</div>
-
-<!-- ADMIN PANEL -->
-
-<div id="adminPanel" class="admin-card" style="display:none;">
-
-<h3>Admin Profit Withdrawal</h3>
-
-<div class="admin-balance">
-
-<p>Total Profit</p>
-
-<strong id="profitBalance">₦0</strong>
-
-</div>
-
-<input type="number" id="withdrawAmount" placeholder="Enter Amount">
-
-<input type="text" id="bankName" placeholder="Bank Name">
-
-<input type="text" id="accountNumber" placeholder="Account Number">
-
-<button class="admin-withdraw-btn" onclick="adminWithdraw()">
-
-Withdraw Profit
-
-</button>
-
-</div>
-
-<!-- QUICK ACTIONS -->
-
-<div class="quick-actions">
-
-<button onclick="location.href='data.html'">
-
-💳 Buy Data
-
-</button>
-
-<button onclick="location.href='airtime.html'">
-
-📞 Buy Airtime
-
-</button>
-
-</div>
-
-<!-- POPULAR PLAN -->
-
-<div class="popular-plan">
-
-<h4>🔥 Most Popular Data Plan</h4>
-
-<p>1GB for ₦300</p>
-
-<button onclick="location.href='data.html'">
-
-Buy Now
-
-</button>
-
 </div>
 
 <!-- TRANSACTIONS -->
-
-<div>
 
 <h3 style="margin-top:20px;">Recent Transactions</h3>
 
@@ -313,113 +195,83 @@ Buy Now
 
 </div>
 
-</div>
+<!-- PROFILE PANEL -->
 
-<!-- SUPPORT -->
+<div id="profilePanel" class="profilePanel">
 
-<div class="support-box">
+<div style="text-align:center">
 
-<h4>Need Help?</h4>
+<div id="avatar" class="avatar">U</div>
 
-<button onclick="callSupport()">📞 Call Support</button>
+<h3 id="profileName">User</h3>
 
-<button onclick="chatSupport()">💬 Contact Developer</button>
-
-</div>
+<p id="profileEmail">email@email.com</p>
 
 </div>
 
-<!-- SET PIN -->
+<button class="profileBtn" onclick="openPinModal()">🔐 Set Transaction PIN</button>
 
-<div id="setPinSection" class="tab-content" style="display:none;">
+<button class="profileBtn" onclick="openTab('changePinSection')">🔑 Change PIN</button>
 
-<input type="password" id="setPinInput" placeholder="Enter New PIN">
+<button class="profileBtn" onclick="openTab('changePasswordSection')">🔒 Change Password</button>
 
-<button onclick="setPin()">Set PIN</button>
+<button class="profileBtn" onclick="toggleBiometric()">🧬 Enable Biometric Login/Purchase</button>
 
-</div>
+<button class="profileBtn" onclick="callSupport()">📞 Call Support</button>
 
-<!-- CHANGE PIN -->
+<button class="profileBtn" onclick="chatSupport()">💬 Contact Developer</button>
 
-<div id="changePinSection" class="tab-content" style="display:none;">
+<button class="profileBtn" onclick="logout()">🚪 Logout</button>
 
-<input type="password" id="oldPin" placeholder="Old PIN">
-
-<input type="password" id="newPin" placeholder="New PIN">
-
-<button onclick="changePin()">Change PIN</button>
+<button class="profileBtn" onclick="toggleProfile()">⬇ Close</button>
 
 </div>
 
-<!-- CHANGE PASSWORD -->
+<!-- PIN MODAL -->
 
-<div id="changePasswordSection" class="tab-content" style="display:none;">
+<div id="pinModal" class="pinModal">
 
-<input type="password" id="oldPassword" placeholder="Old Password">
+<div class="pinBox">
 
-<input type="password" id="newPassword" placeholder="New Password">
+<h3>Create Transaction PIN</h3>
 
-<button onclick="changePassword()">Change Password</button>
+<div class="pinInputs">
 
-</div>
-
-<!-- FLOATING QUICK ACTIONS -->
-
-<div class="quickActions">
-
-<button onclick="location.href='data.html'">
-
-📶
-<span>Data</span>
-
-</button>
-
-<button onclick="location.href='airtime.html'">
-
-📞
-<span>Airtime</span>
-
-</button>
-
-<button onclick="openTab('fundTab')">
-
-💳
-<span>Fund</span>
-
-</button>
+<input maxlength="1" oninput="movePin(this,0)">
+<input maxlength="1" oninput="movePin(this,1)">
+<input maxlength="1" oninput="movePin(this,2)">
+<input maxlength="1" oninput="movePin(this,3)">
 
 </div>
 
-<!-- FINTECH NAV -->
+<button style="margin-top:20px" onclick="savePin()">Save PIN</button>
+
+</div>
+
+</div>
+
+<!-- NAV -->
 
 <div class="bottomNav">
 
-<button onclick="openTab('homeTab')">
-
+<button onclick="location.href='dashboard.html'">
 🏠
 <span>Home</span>
-
 </button>
 
 <button onclick="location.href='data.html'">
-
 📶
 <span>Data</span>
-
 </button>
 
 <button onclick="location.href='transactions.html'">
-
 📜
 <span>History</span>
-
 </button>
 
-<button onclick="toggleMore()">
-
+<button onclick="toggleProfile()">
 👤
 <span>Profile</span>
-
 </button>
 
 </div>
@@ -428,65 +280,120 @@ Buy Now
 
 <script>
 
+/* PROFILE */
+
+function toggleProfile(){
+
+document.getElementById("profilePanel").classList.toggle("show")
+
+}
+
 /* SUPPORT */
 
 function callSupport(){
-
 window.location.href="tel:08117988561"
-
 }
 
 function chatSupport(){
-
 window.location.href="https://wa.me/2348117988561"
+}
+
+/* BIOMETRIC */
+
+function toggleBiometric(){
+
+if(localStorage.getItem("biometric")){
+
+localStorage.removeItem("biometric")
+alert("Biometric Disabled")
+
+}else{
+
+localStorage.setItem("biometric","true")
+alert("Biometric Enabled")
 
 }
 
-/* MORE PANEL */
+}
 
-function toggleMore(){
+/* PIN MODAL */
 
-const panel=document.getElementById("morePanel")
+function openPinModal(){
 
-panel.classList.toggle("hidden")
+document.getElementById("pinModal").style.display="flex"
+
+document.querySelector(".pinInputs input").focus()
 
 }
 
-/* TAB SYSTEM */
+/* PIN INPUT AUTO MOVE */
 
-function openTab(id){
+function movePin(el,index){
 
-document.querySelectorAll(".tab-content").forEach(tab=>{
+const inputs=document.querySelectorAll(".pinInputs input")
 
-tab.style.display="none"
+if(el.value && index<3){
+
+inputs[index+1].focus()
+
+}
+
+}
+
+/* SAVE PIN */
+
+async function savePin(){
+
+const inputs=document.querySelectorAll(".pinInputs input")
+
+let pin=""
+
+inputs.forEach(i=>pin+=i.value)
+
+if(pin.length!==4){
+
+alert("Enter 4 digit PIN")
+return
+
+}
+
+await fetch("/api/set-pin",{
+
+method:"POST",
+headers:{
+"Content-Type":"application/json"
+},
+body:JSON.stringify({pin})
 
 })
 
-const el=document.getElementById(id)
+document.getElementById("pinModal").style.display="none"
 
-if(el) el.style.display="block"
-
-}
-
-/* WELCOME SOUND */
-
-window.addEventListener("load",()=>{
-
-setTimeout(()=>{
-
-const sound=document.getElementById("welcomeSound")
-
-if(sound){
-
-sound.volume=0.5
-
-sound.play().catch(()=>{})
+alert("PIN Saved")
 
 }
 
-},1200)
+/* PROFILE DATA */
 
-})
+async function loadProfile(){
+
+try{
+
+const res=await fetch("/api/me")
+
+const user=await res.json()
+
+document.getElementById("profileName").innerText=user.username
+
+document.getElementById("profileEmail").innerText=user.email
+
+document.getElementById("avatar").innerText=user.username.charAt(0).toUpperCase()
+
+}catch{}
+
+}
+
+window.onload=loadProfile
 
 </script>
 
