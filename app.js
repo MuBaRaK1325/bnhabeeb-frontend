@@ -39,15 +39,13 @@ setTimeout(()=>t.remove(),3000)
 
 }
 
-/* GENERATE TRANSACTION ID */
+/* TRANSACTION ID */
 
 function generateTransactionID(){
-
 return "MC"+Date.now()+Math.floor(Math.random()*1000)
-
 }
 
-/* SAVE TRANSACTION HISTORY */
+/* SAVE TRANSACTION */
 
 function saveTransaction(tx){
 
@@ -59,28 +57,17 @@ localStorage.setItem("transactions",JSON.stringify(history))
 
 }
 
-/* NETWORK PREFIX (FULL NIGERIA) */
+/* NETWORK PREFIX */
 
 const NETWORK_PREFIX={
 
-MTN:[
-"0803","0806","0703","0706","0813","0816","0810","0814",
-"0903","0906","0913","0916"
-],
+MTN:["0803","0806","0703","0706","0813","0816","0810","0814","0903","0906","0913","0916"],
 
-AIRTEL:[
-"0802","0808","0701","0708","0812",
-"0901","0902","0907","0911","0912"
-],
+AIRTEL:["0802","0808","0701","0708","0812","0901","0902","0907","0911","0912"],
 
-GLO:[
-"0805","0807","0705","0811","0815",
-"0905","0915"
-],
+GLO:["0805","0807","0705","0811","0815","0905","0915"],
 
-"9MOBILE":[
-"0809","0817","0818","0908","0909"
-]
+"9MOBILE":["0809","0817","0818","0908","0909"]
 
 }
 
@@ -98,10 +85,10 @@ phone="0"+phone.slice(3)
 
 const prefix=phone.substring(0,4)
 
-for(const network in NETWORK_PREFIX){
+for(const net in NETWORK_PREFIX){
 
-if(NETWORK_PREFIX[network].includes(prefix)){
-return network
+if(NETWORK_PREFIX[net].includes(prefix)){
+return net
 }
 
 }
@@ -127,9 +114,6 @@ GLO:"images/Glo.png",
 
 logo.src=logos[network] || ""
 logo.style.display="block"
-logo.style.border="3px solid #2f6bff"
-logo.style.borderRadius="50%"
-logo.style.padding="4px"
 
 }
 
@@ -145,10 +129,7 @@ if(phone.length<4) return
 
 const network=detectNetwork(phone)
 
-if(!network){
-el("plans").innerHTML=""
-return
-}
+if(!network) return
 
 showNetworkLogo(network)
 
@@ -174,31 +155,22 @@ headers:{Authorization:`Bearer ${token}`}
 
 let plans=await res.json()
 
-if(!Array.isArray(plans)){
-showToast("Failed to load plans")
-return
-}
-
 const container=el("plans")
 
 if(!container) return
 
 container.innerHTML=""
 
-const filtered=plans.filter(p=>
-p.network?.toUpperCase()===network
-)
-
-if(filtered.length===0){
-container.innerHTML="<p>No plans available</p>"
-return
-}
+const filtered=plans.filter(p=>p.network?.toUpperCase()===network)
 
 filtered.forEach(plan=>{
 
 const name=plan.plan || plan.name || "Data Plan"
+
 const price=plan.price || plan.amount || 0
-const validity=plan.validity || plan.duration || ""
+
+const validity=plan.validity || plan.duration || "N/A"
+
 const id=plan.plan_id || plan.id
 
 const card=document.createElement("div")
@@ -218,8 +190,7 @@ container.appendChild(card)
 
 }catch(e){
 
-console.log(e)
-showToast("Network error loading plans")
+showToast("Failed to load plans")
 
 }
 
@@ -235,18 +206,12 @@ function openPinModal(plan,type){
 selectedPlan=plan
 purchaseType=type
 
-const modal=el("pinModal")
-
-if(modal) modal.classList.remove("hidden")
+el("pinModal")?.classList.remove("hidden")
 
 }
 
 function closePinModal(){
-
-const modal=el("pinModal")
-
-if(modal) modal.classList.add("hidden")
-
+el("pinModal")?.classList.add("hidden")
 }
 
 /* DATA PURCHASE */
@@ -254,6 +219,7 @@ if(modal) modal.classList.add("hidden")
 async function buyData(planId,pin){
 
 const phone=el("phone")?.value
+
 const token=getToken()
 
 if(!phone){
@@ -284,32 +250,24 @@ const data=await res.json()
 
 if(!data.status){
 
-if(data.message?.toLowerCase().includes("balance")){
-showToast("Insufficient wallet balance")
-}else{
 showToast(data.message || "Transaction failed")
-}
 
 return
 }
 
 successSound.play()
 
-const txid=generateTransactionID()
-
 const tx={
-id:txid,
+id:generateTransactionID(),
 type:"DATA",
 network:detectNetwork(phone),
-phone:phone,
+phone,
 amount:data.amount || "",
 status:"SUCCESS",
 date:new Date().toLocaleString()
 }
 
 saveTransaction(tx)
-
-showToast("Data purchase successful")
 
 showReceipt(tx)
 
@@ -326,11 +284,6 @@ showToast("Network error")
 async function buyAirtime(phone,amount,pin){
 
 const token=getToken()
-
-if(!phone || !amount){
-showToast("Enter phone and amount")
-return
-}
 
 try{
 
@@ -356,32 +309,24 @@ const data=await res.json()
 
 if(!data.status){
 
-if(data.message?.toLowerCase().includes("balance")){
-showToast("Insufficient wallet balance")
-}else{
 showToast(data.message || "Transaction failed")
-}
 
 return
 }
 
 successSound.play()
 
-const txid=generateTransactionID()
-
 const tx={
-id:txid,
+id:generateTransactionID(),
 type:"AIRTIME",
 network:detectNetwork(phone),
-phone:phone,
-amount:amount,
+phone,
+amount,
 status:"SUCCESS",
 date:new Date().toLocaleString()
 }
 
 saveTransaction(tx)
-
-showToast("Airtime successful")
 
 showReceipt(tx)
 
@@ -400,16 +345,17 @@ function confirmPurchase(){
 const pin=el("pin")?.value
 
 if(!pin){
-showToast("Enter transaction PIN")
+showToast("Enter PIN")
 return
 }
 
 if(purchaseType==="airtime"){
 
-const phone=el("phone")?.value
-const amount=el("amount")?.value
-
-buyAirtime(phone,amount,pin)
+buyAirtime(
+el("phone")?.value,
+el("amount")?.value,
+pin
+)
 
 }else{
 
@@ -418,6 +364,16 @@ buyData(selectedPlan,pin)
 }
 
 closePinModal()
+
+}
+
+/* BIOMETRIC ENABLE */
+
+function enableBiometric(){
+
+localStorage.setItem("biometric","true")
+
+showToast("Biometric enabled")
 
 }
 
@@ -430,20 +386,79 @@ showToast("Enable biometric first")
 return
 }
 
+/* still uses pin because backend requires it */
+
+const savedPin=localStorage.getItem("userPin")
+
+if(!savedPin){
+showToast("Set transaction PIN first")
+return
+}
+
 if(purchaseType==="airtime"){
 
-const phone=el("phone")?.value
-const amount=el("amount")?.value
-
-buyAirtime(phone,amount,"biometric")
+buyAirtime(
+el("phone")?.value,
+el("amount")?.value,
+savedPin
+)
 
 }else{
 
-buyData(selectedPlan,"biometric")
+buyData(selectedPlan,savedPin)
 
 }
 
-closePinModal()
+}
+
+/* SAVE PIN */
+
+async function savePin(){
+
+const pin=el("pin")?.value
+
+localStorage.setItem("userPin",pin)
+
+showToast("PIN saved")
+
+}
+
+/* PASSWORD CHANGE */
+
+async function changePassword(){
+
+const oldPass=el("oldPassword")?.value
+const newPass=el("newPassword")?.value
+
+const token=getToken()
+
+try{
+
+const res=await fetch(`${API}/api/change-password`,{
+
+method:"POST",
+
+headers:{
+"Content-Type":"application/json",
+Authorization:`Bearer ${token}`
+},
+
+body:JSON.stringify({
+old_password:oldPass,
+new_password:newPass
+})
+
+})
+
+const data=await res.json()
+
+showToast(data.message)
+
+}catch{
+
+showToast("Password change failed")
+
+}
 
 }
 
@@ -451,42 +466,39 @@ closePinModal()
 
 function showReceipt(data){
 
-const receipt=`
+const div=document.createElement("div")
+
+div.innerHTML=`
 
 <div class="receipt">
 
-<img src="images/logo.png" style="width:120px;margin-bottom:10px">
-
 <h3>MayConnect Receipt</h3>
 
-<p><b>Reference:</b> ${data.id}</p>
+<p>Reference: ${data.id}</p>
 
-<p><b>Type:</b> ${data.type}</p>
+<p>Type: ${data.type}</p>
 
-<p><b>Network:</b> ${data.network}</p>
+<p>Network: ${data.network}</p>
 
-<p><b>Phone:</b> ${data.phone}</p>
+<p>Phone: ${data.phone}</p>
 
-<p><b>Amount:</b> ₦${data.amount}</p>
+<p>Amount: ₦${data.amount}</p>
 
-<p><b>Status:</b> ${data.status}</p>
+<p>Status: ${data.status}</p>
 
-<p><b>Date:</b> ${data.date}</p>
+<p>Date: ${data.date}</p>
 
-<button onclick="shareReceipt()">Share Receipt</button>
+<button onclick="shareReceipt()">Share</button>
 
 </div>
 
 `
 
-const div=document.createElement("div")
-div.innerHTML=receipt
-
 document.body.appendChild(div)
 
 }
 
-/* SHARE RECEIPT */
+/* SHARE */
 
 function shareReceipt(){
 
@@ -530,8 +542,12 @@ el("usernameDisplay").innerText=`Hello ${user.name}`
 if(el("walletBalance"))
 el("walletBalance").innerText=`₦${user.wallet || 0}`
 
-if((user.is_admin || user.isAdmin || user.role==="admin") && el("adminPanel")){
-el("adminPanel").style.display="block"
+/* ADMIN PANEL */
+
+if(user.role==="admin" || user.is_admin===true){
+
+el("adminPanel")?.classList.remove("hidden")
+
 }
 
 }catch(e){
@@ -540,21 +556,13 @@ console.log(e)
 
 }
 
-const loader=el("dashboardLoader")
-if(loader) loader.style.display="none"
+el("dashboardLoader")?.remove()
 
 }
 
-/* PAGE LOAD FIX */
+/* PAGE LOAD */
 
 document.addEventListener("DOMContentLoaded",()=>{
-
-setTimeout(()=>{
-
-const loader=el("dashboardLoader")
-if(loader) loader.style.display="none"
-
-},2000)
 
 loadDashboard()
 
