@@ -334,7 +334,63 @@ function changePassword(){
 showToast("Password change coming soon")
 }
 
-/* DASHBOARD LOADER FIX */
+/* DASHBOARD FUNCTION (THIS WAS MISSING) */
+
+async function loadDashboard(){
+
+try{
+
+const token=getToken()
+
+if(!token){
+window.location="login.html"
+return
+}
+
+const res=await fetch(`${API}/api/user`,{
+headers:{Authorization:`Bearer ${token}`}
+})
+
+const user=await res.json()
+
+const username=document.getElementById("usernameDisplay")
+if(username){
+username.innerText=`Hello 👋 ${user.name}`
+}
+
+const wallet=document.getElementById("walletBalance")
+if(wallet){
+wallet.innerText=`₦${user.wallet || 0}`
+}
+
+const profileName=document.getElementById("profileName")
+if(profileName) profileName.innerText=user.name
+
+const profileEmail=document.getElementById("profileEmail")
+if(profileEmail) profileEmail.innerText=user.email
+
+/* SHOW ADMIN PANEL */
+
+if(user.isAdmin){
+const admin=document.getElementById("adminPanel")
+if(admin) admin.style.display="block"
+}
+
+/* HIDE LOADER */
+
+const loader=document.getElementById("dashboardLoader")
+if(loader) loader.style.display="none"
+
+}catch(e){
+
+console.log(e)
+showToast("Failed to load dashboard")
+
+}
+
+}
+
+/* START DASHBOARD */
 
 window.addEventListener("load",()=>{
 
