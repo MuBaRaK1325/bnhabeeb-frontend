@@ -26,9 +26,25 @@ background:#08142c;
 color:white;
 }
 
-#networkLogo{
-width:50px;
+.networkBox{
+display:flex;
+align-items:center;
+gap:10px;
 margin-top:10px;
+}
+
+#networkLogo{
+width:45px;
+border:3px solid #3b78e7;
+border-radius:50%;
+padding:4px;
+display:none;
+}
+
+#networkName{
+background:#08142c;
+padding:6px 12px;
+border-radius:8px;
 display:none;
 }
 
@@ -37,6 +53,7 @@ background:#08142c;
 padding:15px;
 border-radius:12px;
 margin-top:10px;
+border:1px solid #12264f;
 }
 
 button{
@@ -87,7 +104,13 @@ placeholder="Enter phone number"
 oninput="handlePhoneInput(this)"
 >
 
+<div class="networkBox">
+
 <img id="networkLogo">
+
+<span id="networkName"></span>
+
+</div>
 
 <div id="plans"></div>
 

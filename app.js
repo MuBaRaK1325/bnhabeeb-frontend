@@ -61,23 +61,29 @@ return null
 
 }
 
-/* SHOW NETWORK LOGO */
+/* SHOW NETWORK LOGO + BADGE */
 
 function showNetworkLogo(network){
 
 const logo=document.getElementById("networkLogo")
+const badge=document.getElementById("networkName")
 
 if(!logo) return
 
 const logos={
-MTN:"images/mtn.png",
-AIRTEL:"images/airtel.png",
-GLO:"images/glo.png",
+MTN:"images/MTN.png",
+AIRTEL:"images/Airtel.png",
+GLO:"images/Glo.png",
 "9MOBILE":"images/9mobile.png"
 }
 
 logo.src=logos[network] || ""
 logo.style.display="block"
+
+if(badge){
+badge.innerText=network
+badge.style.display="inline-block"
+}
 
 }
 
@@ -91,11 +97,16 @@ if(phone.length<4) return
 
 const network=detectNetwork(phone)
 
-if(!network) return
+if(!network){
+showToast("Network not detected")
+return
+}
 
 showNetworkLogo(network)
 
+if(document.getElementById("plans")){
 loadDataPlans(network)
+}
 
 }
 
@@ -119,8 +130,8 @@ if(!container) return
 
 container.innerHTML=""
 
-const filtered=plans.filter(
-p=>p.network.toUpperCase()===network
+const filtered=plans.filter(p=>
+p.network && p.network.toUpperCase().includes(network)
 )
 
 filtered.forEach(plan=>{
@@ -295,11 +306,43 @@ body:JSON.stringify({pin})
 
 const data=await res.json()
 
-showToast(data.message)
+showToast(data.message || "PIN saved")
 
 closePinModal()
 
 }
+
+/* BIOMETRIC */
+
+function toggleBiometric(){
+
+const enabled=localStorage.getItem("biometric")
+
+if(enabled){
+localStorage.removeItem("biometric")
+showToast("Biometric disabled")
+}else{
+localStorage.setItem("biometric","true")
+showToast("Biometric enabled")
+}
+
+}
+
+/* PASSWORD */
+
+function changePassword(){
+showToast("Password change coming soon")
+}
+
+/* DASHBOARD LOADER FIX */
+
+window.addEventListener("load",()=>{
+
+if(document.getElementById("walletBalance")){
+loadDashboard()
+}
+
+})
 
 /* LOGOUT */
 

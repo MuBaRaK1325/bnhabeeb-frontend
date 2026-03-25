@@ -342,3 +342,10 @@ margin:10px;
 border-radius:10px;
 text-align:center;
 }
+.planCard{
+background:#08142c;
+padding:15px;
+border-radius:12px;
+margin-top:10px;
+border:1px solid #12264f;
+}
