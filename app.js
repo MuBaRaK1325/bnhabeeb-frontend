@@ -28,6 +28,12 @@ setTimeout(()=>t.remove(),3000)
 
 }
 
+/* SAFE ELEMENT GETTER */
+
+function el(id){
+return document.getElementById(id)
+}
+
 /* NETWORK PREFIX */
 
 const NETWORK_PREFIX={
@@ -50,23 +56,20 @@ phone="0"+phone.slice(3)
 const prefix=phone.substring(0,4)
 
 for(const network in NETWORK_PREFIX){
-
 if(NETWORK_PREFIX[network].includes(prefix)){
 return network
 }
-
 }
 
 return null
-
 }
 
-/* SHOW NETWORK LOGO + BADGE */
+/* SHOW NETWORK LOGO */
 
 function showNetworkLogo(network){
 
-const logo=document.getElementById("networkLogo")
-const badge=document.getElementById("networkName")
+const logo=el("networkLogo")
+const badge=el("networkName")
 
 if(!logo) return
 
@@ -79,6 +82,9 @@ GLO:"images/Glo.png",
 
 logo.src=logos[network] || ""
 logo.style.display="block"
+logo.style.border="3px solid #2f6bff"
+logo.style.borderRadius="50%"
+logo.style.padding="5px"
 
 if(badge){
 badge.innerText=network
@@ -97,14 +103,11 @@ if(phone.length<4) return
 
 const network=detectNetwork(phone)
 
-if(!network){
-showToast("Network not detected")
-return
-}
+if(!network) return
 
 showNetworkLogo(network)
 
-if(document.getElementById("plans")){
+if(el("plans")){
 loadDataPlans(network)
 }
 
@@ -124,20 +127,19 @@ headers:{Authorization:`Bearer ${token}`}
 
 const plans=await res.json()
 
-const container=document.getElementById("plans")
+const container=el("plans")
 
 if(!container) return
 
 container.innerHTML=""
 
-const filtered=plans.filter(p=>
+const filtered=plans.filter(p =>
 p.network && p.network.toUpperCase().includes(network)
 )
 
 filtered.forEach(plan=>{
 
 const card=document.createElement("div")
-
 card.className="planCard"
 
 card.innerHTML=`
@@ -151,8 +153,9 @@ container.appendChild(card)
 
 })
 
-}catch{
+}catch(e){
 
+console.log(e)
 showToast("Failed to load plans")
 
 }
@@ -169,13 +172,13 @@ function openPinModal(plan,type){
 selectedPlan=plan
 purchaseType=type
 
-document.getElementById("pinModal").classList.remove("hidden")
+el("pinModal")?.classList.remove("hidden")
 
 }
 
 function closePinModal(){
 
-document.getElementById("pinModal").classList.add("hidden")
+el("pinModal")?.classList.add("hidden")
 
 }
 
@@ -183,9 +186,10 @@ document.getElementById("pinModal").classList.add("hidden")
 
 async function buyData(planId,pin){
 
-const phone=document.getElementById("phone").value
-
+const phone=el("phone")?.value
 const token=getToken()
+
+try{
 
 const res=await fetch(`${API}/api/buy-data`,{
 
@@ -213,6 +217,12 @@ return
 
 showToast("Data purchase successful")
 
+}catch{
+
+showToast("Network error")
+
+}
+
 }
 
 /* BUY AIRTIME */
@@ -220,6 +230,8 @@ showToast("Data purchase successful")
 async function buyAirtime(phone,amount,pin){
 
 const token=getToken()
+
+try{
 
 const res=await fetch(`${API}/api/buy-airtime`,{
 
@@ -248,13 +260,19 @@ return
 
 showToast("Airtime successful")
 
+}catch{
+
+showToast("Network error")
+
+}
+
 }
 
 /* CONFIRM PURCHASE */
 
-async function confirmPurchase(){
+function confirmPurchase(){
 
-const pin=document.getElementById("pin").value
+const pin=el("pin")?.value
 
 if(!pin){
 showToast("Enter transaction PIN")
@@ -263,8 +281,8 @@ return
 
 if(purchaseType==="airtime"){
 
-const phone=document.getElementById("phone").value
-const amount=document.getElementById("amount").value
+const phone=el("phone").value
+const amount=el("amount").value
 
 buyAirtime(phone,amount,pin)
 
@@ -282,7 +300,7 @@ closePinModal()
 
 async function savePin(){
 
-const pin=document.getElementById("pin").value
+const pin=el("pin")?.value
 
 if(!pin){
 showToast("Enter PIN")
@@ -290,6 +308,8 @@ return
 }
 
 const token=getToken()
+
+try{
 
 const res=await fetch(`${API}/api/set-pin`,{
 
@@ -308,6 +328,12 @@ const data=await res.json()
 
 showToast(data.message || "PIN saved")
 
+}catch{
+
+showToast("Failed to save PIN")
+
+}
+
 closePinModal()
 
 }
@@ -319,11 +345,15 @@ function toggleBiometric(){
 const enabled=localStorage.getItem("biometric")
 
 if(enabled){
+
 localStorage.removeItem("biometric")
 showToast("Biometric disabled")
+
 }else{
+
 localStorage.setItem("biometric","true")
 showToast("Biometric enabled")
+
 }
 
 }
@@ -334,11 +364,21 @@ function changePassword(){
 showToast("Password change coming soon")
 }
 
-/* DASHBOARD FUNCTION (THIS WAS MISSING) */
+/* DASHBOARD LOADER CONTROL */
+
+function hideLoader(){
+
+const loader=el("dashboardLoader")
+
+if(loader){
+loader.style.display="none"
+}
+
+}
+
+/* DASHBOARD */
 
 async function loadDashboard(){
-
-try{
 
 const token=getToken()
 
@@ -347,54 +387,61 @@ window.location="login.html"
 return
 }
 
+try{
+
 const res=await fetch(`${API}/api/user`,{
 headers:{Authorization:`Bearer ${token}`}
 })
 
+if(!res.ok) throw new Error("API failed")
+
 const user=await res.json()
 
-const username=document.getElementById("usernameDisplay")
-if(username){
-username.innerText=`Hello 👋 ${user.name}`
+if(el("usernameDisplay")){
+el("usernameDisplay").innerText=`Hello 👋 ${user.name}`
 }
 
-const wallet=document.getElementById("walletBalance")
-if(wallet){
-wallet.innerText=`₦${user.wallet || 0}`
+if(el("walletBalance")){
+el("walletBalance").innerText=`₦${user.wallet || 0}`
 }
 
-const profileName=document.getElementById("profileName")
-if(profileName) profileName.innerText=user.name
-
-const profileEmail=document.getElementById("profileEmail")
-if(profileEmail) profileEmail.innerText=user.email
-
-/* SHOW ADMIN PANEL */
-
-if(user.isAdmin){
-const admin=document.getElementById("adminPanel")
-if(admin) admin.style.display="block"
+if(el("profileName")){
+el("profileName").innerText=user.name
 }
 
-/* HIDE LOADER */
+if(el("profileEmail")){
+el("profileEmail").innerText=user.email
+}
 
-const loader=document.getElementById("dashboardLoader")
-if(loader) loader.style.display="none"
+if(user.isAdmin && el("adminPanel")){
+el("adminPanel").style.display="block"
+}
 
 }catch(e){
 
-console.log(e)
-showToast("Failed to load dashboard")
+console.log("Dashboard API error:",e)
+
+showToast("Dashboard loaded offline")
 
 }
 
+/* ALWAYS HIDE LOADER */
+
+hideLoader()
+
 }
+
+/* AUTO LOADER TIMEOUT (FINTECH FIX) */
+
+setTimeout(()=>{
+hideLoader()
+},5000)
 
 /* START DASHBOARD */
 
 window.addEventListener("load",()=>{
 
-if(document.getElementById("walletBalance")){
+if(el("walletBalance")){
 loadDashboard()
 }
 
