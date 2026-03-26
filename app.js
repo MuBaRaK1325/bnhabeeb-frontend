@@ -67,7 +67,7 @@ function showNetworkLogo(network) {
   const logo = el("networkLogo");
   if (!logo) return;
   const logos = {
-    MTN: "images/MTN.png",
+    MTN: "images/Mtn.png",
     AIRTEL: "images/Airtel.png",
     GLO: "images/Glo.png",
     "9MOBILE": "images/9mobile.png"
@@ -93,15 +93,14 @@ function handlePhoneInput(input) {
 async function loadDataPlans(network) {
   try {
     const token = getToken();
-    const res = await fetch(`${API}/api/plans`, {
+    const res = await fetch(`${API}/api/plans?network=${network}`, {
       headers: { Authorization: `Bearer ${token}` }
     });
     let plans = await res.json();
     const container = el("plans");
     if (!container) return;
     container.innerHTML = "";
-    const filtered = plans.filter(p => p.network?.toUpperCase() === network);
-    filtered.forEach(plan => {
+    plans.forEach(plan => {
       const name = plan.plan || plan.name || "Data Plan";
       const price = plan.price || plan.amount || 0;
       const validity = plan.validity || plan.duration || "N/A";
@@ -111,7 +110,7 @@ async function loadDataPlans(network) {
       card.innerHTML = `
         <h4>${name}</h4>
         <p>₦${price}</p>
-        <p>${validity}</p>
+        <p>Validity: ${validity}</p>
         <button onclick="openPinModal('${id}','data')">Buy</button>
       `;
       container.appendChild(card);
@@ -148,14 +147,14 @@ async function buyData(planId, pin) {
       body: JSON.stringify({ plan_id: planId, phone, pin })
     });
     const data = await res.json();
-    if (!data.message) { showToast("Transaction failed"); return; }
+    if (!data.message) { showToast(data.error || "Transaction failed"); return; }
     successSound.play();
     const tx = {
       id: generateTransactionID(),
       type: "DATA",
       network: detectNetwork(phone),
       phone,
-      amount: data.amount || 0,
+      amount: data.amount || data.price || 0,
       status: "SUCCESS",
       date: new Date().toLocaleString()
     };
@@ -179,7 +178,10 @@ async function buyAirtime(phone, amount, pin) {
       body: JSON.stringify({ network: detectNetwork(phone), phone, amount, pin })
     });
     const data = await res.json();
-    if (!data.message) { showToast("Transaction failed"); return; }
+    if (!data.message) {
+      showToast(data.error || "Transaction failed");
+      return;
+    }
     successSound.play();
     const tx = {
       id: generateTransactionID(),
@@ -217,8 +219,8 @@ function enableBiometric() {
 
 /* BIOMETRIC PURCHASE */
 function confirmBiometric() {
-  if (!localStorage.getItem("biometric")) { showToast("Enable biometric first"); return; }
   const savedPin = localStorage.getItem("userPin");
+  if (!localStorage.getItem("biometric")) { showToast("Enable biometric first"); return; }
   if (!savedPin) { showToast("Set transaction PIN first"); return; }
   if (purchaseType === "airtime") {
     buyAirtime(el("phone")?.value, el("amount")?.value, savedPin);
@@ -229,28 +231,14 @@ function confirmBiometric() {
 
 /* SAVE PIN */
 function savePin() {
-  const pin = el("pin")?.value;
-  if (!pin) { showToast("Enter PIN"); return; }
+  const pinInputs = document.querySelectorAll(".pinInputs input");
+  const pin = Array.from(pinInputs).map(i => i.value).join("");
+  if (!pin || pin.length !== 4) { showToast("Enter 4-digit PIN"); return; }
   localStorage.setItem("userPin", pin);
   showToast("PIN saved");
-}
-
-/* PASSWORD CHANGE */
-async function changePassword() {
-  const oldPass = el("oldPassword")?.value;
-  const newPass = el("newPassword")?.value;
-  const token = getToken();
-  try {
-    const res = await fetch(`${API}/api/change-password`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-      body: JSON.stringify({ old_password: oldPass, new_password: newPass })
-    });
-    const data = await res.json();
-    showToast(data.message);
-  } catch {
-    showToast("Password change failed");
-  }
+  el("setPinBtn")?.classList.add("hidden");
+  el("changePinBtn")?.classList.remove("hidden");
+  closePinModal();
 }
 
 /* RECEIPT */
@@ -272,15 +260,6 @@ function showReceipt(data) {
   document.body.appendChild(div);
 }
 
-/* SHARE */
-function shareReceipt() {
-  if (navigator.share) {
-    navigator.share({ title: "MayConnect Receipt", text: "Transaction completed successfully" });
-  } else {
-    showToast("Sharing not supported");
-  }
-}
-
 /* DASHBOARD */
 async function loadDashboard() {
   const token = getToken();
@@ -288,20 +267,50 @@ async function loadDashboard() {
   try {
     const res = await fetch(`${API}/api/me`, { headers: { Authorization: `Bearer ${token}` } });
     const user = await res.json();
+
     if (el("usernameDisplay")) el("usernameDisplay").innerText = `Hello ${user.username}`;
     if (el("walletBalance")) el("walletBalance").innerText = `₦${user.wallet_balance || 0}`;
+
     /* ADMIN PANEL */
-    if (user.is_admin) el("adminPanel")?.classList.remove("hidden");
-  } catch (e) {
-    console.log(e);
-  }
+    if (user.is_admin) {
+      el("adminPanel")?.classList.remove("hidden");
+      const profitEl = el("profitBalance");
+      if (profitEl) profitEl.innerText = `₦${user.admin_wallet || 0}`;
+    }
+
+    /* PIN BUTTON LOGIC */
+    if (user.pin) {
+      el("setPinBtn")?.classList.add("hidden");
+      el("changePinBtn")?.classList.remove("hidden");
+    } else {
+      el("setPinBtn")?.classList.remove("hidden");
+      el("changePinBtn")?.classList.add("hidden");
+    }
+  } catch (e) { console.log(e); }
   el("dashboardLoader")?.remove();
 }
 
+/* ADMIN WITHDRAW */
+async function adminWithdraw() {
+  const amount = el("withdrawAmount")?.value;
+  const bank = el("bankName")?.value;
+  const account_number = el("accountNumber")?.value;
+  if (!amount || !bank || !account_number) { showToast("Fill all fields"); return; }
+  const token = getToken();
+  try {
+    const res = await fetch(`${API}/api/admin/withdraw`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+      body: JSON.stringify({ amount, bank, account_number, account_name: bank })
+    });
+    const data = await res.json();
+    showToast(data.message);
+    loadDashboard();
+  } catch { showToast("Withdrawal failed"); }
+}
+
 /* PAGE LOAD */
-document.addEventListener("DOMContentLoaded", () => {
-  loadDashboard();
-});
+document.addEventListener("DOMContentLoaded", loadDashboard);
 
 /* LOGOUT */
 function logout() {
@@ -310,6 +319,4 @@ function logout() {
 }
 
 /* MOBILE FIX */
-window.addEventListener("load", () => {
-  document.body.style.display = "block"; // Ensures mobile browser shows content
-});
+window.addEventListener("load", () => { document.body.style.display = "block"; });
