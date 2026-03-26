@@ -17,15 +17,17 @@ const successSound = new Audio("sounds/success.mp3");
 function showToast(msg) {
   const t = document.createElement("div");
   t.innerText = msg;
-  t.style.position = "fixed";
-  t.style.bottom = "30px";
-  t.style.left = "50%";
-  t.style.transform = "translateX(-50%)";
-  t.style.background = "#000";
-  t.style.padding = "12px 20px";
-  t.style.borderRadius = "8px";
-  t.style.color = "#fff";
-  t.style.zIndex = "9999";
+  Object.assign(t.style, {
+    position: "fixed",
+    bottom: "30px",
+    left: "50%",
+    transform: "translateX(-50%)",
+    background: "#000",
+    padding: "12px 20px",
+    borderRadius: "8px",
+    color: "#fff",
+    zIndex: "9999"
+  });
   document.body.appendChild(t);
   setTimeout(() => t.remove(), 3000);
 }
@@ -96,7 +98,7 @@ async function loadDataPlans(network) {
     const res = await fetch(`${API}/api/plans?network=${network}`, {
       headers: { Authorization: `Bearer ${token}` }
     });
-    let plans = await res.json();
+    const plans = await res.json();
     const container = el("plans");
     if (!container) return;
     container.innerHTML = "";
@@ -136,13 +138,12 @@ function closePinModal() {
 async function buyData(planId, pin) {
   const phone = el("phone")?.value;
   if (!phone) { showToast("Enter phone number"); return; }
-  const token = getToken();
   try {
     const res = await fetch(`${API}/api/buy-data`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`
+        Authorization: `Bearer ${getToken()}`
       },
       body: JSON.stringify({ plan_id: planId, phone, pin })
     });
@@ -167,21 +168,17 @@ async function buyData(planId, pin) {
 
 /* AIRTIME PURCHASE */
 async function buyAirtime(phone, amount, pin) {
-  const token = getToken();
   try {
     const res = await fetch(`${API}/api/buy-airtime`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`
+        Authorization: `Bearer ${getToken()}`
       },
       body: JSON.stringify({ network: detectNetwork(phone), phone, amount, pin })
     });
     const data = await res.json();
-    if (!data.message) {
-      showToast(data.error || "Transaction failed");
-      return;
-    }
+    if (!data.message) { showToast(data.error || "Transaction failed"); return; }
     successSound.play();
     const tx = {
       id: generateTransactionID(),
@@ -201,7 +198,7 @@ async function buyAirtime(phone, amount, pin) {
 
 /* CONFIRM PURCHASE */
 function confirmPurchase() {
-  const pin = el("pin")?.value;
+  const pin = el("pin")?.value || localStorage.getItem("userPin");
   if (!pin) { showToast("Enter PIN"); return; }
   if (purchaseType === "airtime") {
     buyAirtime(el("phone")?.value, el("amount")?.value, pin);
@@ -211,13 +208,11 @@ function confirmPurchase() {
   closePinModal();
 }
 
-/* BIOMETRIC ENABLE */
+/* BIOMETRIC ENABLE & PURCHASE */
 function enableBiometric() {
   localStorage.setItem("biometric", "true");
   showToast("Biometric enabled");
 }
-
-/* BIOMETRIC PURCHASE */
 function confirmBiometric() {
   const savedPin = localStorage.getItem("userPin");
   if (!localStorage.getItem("biometric")) { showToast("Enable biometric first"); return; }
@@ -242,19 +237,18 @@ function savePin() {
 }
 
 /* RECEIPT */
-function showReceipt(data) {
+function showReceipt(tx) {
   const div = document.createElement("div");
   div.innerHTML = `
     <div class="receipt">
       <h3>MayConnect Receipt</h3>
-      <p>Reference: ${data.id}</p>
-      <p>Type: ${data.type}</p>
-      <p>Network: ${data.network}</p>
-      <p>Phone: ${data.phone}</p>
-      <p>Amount: ₦${data.amount}</p>
-      <p>Status: ${data.status}</p>
-      <p>Date: ${data.date}</p>
-      <button onclick="shareReceipt()">Share</button>
+      <p>Reference: ${tx.id}</p>
+      <p>Type: ${tx.type}</p>
+      <p>Network: ${tx.network}</p>
+      <p>Phone: ${tx.phone}</p>
+      <p>Amount: ₦${tx.amount}</p>
+      <p>Status: ${tx.status}</p>
+      <p>Date: ${tx.date}</p>
     </div>
   `;
   document.body.appendChild(div);
@@ -268,25 +262,26 @@ async function loadDashboard() {
     const res = await fetch(`${API}/api/me`, { headers: { Authorization: `Bearer ${token}` } });
     const user = await res.json();
 
-    if (el("usernameDisplay")) el("usernameDisplay").innerText = `Hello ${user.username}`;
+    if (el("usernameDisplay")) el("usernameDisplay").innerText = `Hello ${user.username || 'User'}`;
     if (el("walletBalance")) el("walletBalance").innerText = `₦${user.wallet_balance || 0}`;
 
     /* ADMIN PANEL */
-    if (user.is_admin) {
-      el("adminPanel")?.classList.remove("hidden");
+    if (user.is_Admin) {
+      el("AdminPanel")?.classList.remove("hidden");
       const profitEl = el("profitBalance");
       if (profitEl) profitEl.innerText = `₦${user.admin_wallet || 0}`;
-    }
+    } else el("adminPanel")?.classList.add("hidden");
 
     /* PIN BUTTON LOGIC */
-    if (user.pin) {
+    if (user.pin || localStorage.getItem("userPin")) {
       el("setPinBtn")?.classList.add("hidden");
       el("changePinBtn")?.classList.remove("hidden");
     } else {
       el("setPinBtn")?.classList.remove("hidden");
       el("changePinBtn")?.classList.add("hidden");
     }
-  } catch (e) { console.log(e); }
+
+  } catch (e) { console.log(e); showToast("Failed to load dashboard"); }
   el("dashboardLoader")?.remove();
 }
 
@@ -296,21 +291,17 @@ async function adminWithdraw() {
   const bank = el("bankName")?.value;
   const account_number = el("accountNumber")?.value;
   if (!amount || !bank || !account_number) { showToast("Fill all fields"); return; }
-  const token = getToken();
   try {
     const res = await fetch(`${API}/api/admin/withdraw`, {
       method: "POST",
-      headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+      headers: { "Content-Type": "application/json", Authorization: `Bearer ${getToken()}` },
       body: JSON.stringify({ amount, bank, account_number, account_name: bank })
     });
     const data = await res.json();
-    showToast(data.message);
+    showToast(data.message || "Withdrawal completed");
     loadDashboard();
   } catch { showToast("Withdrawal failed"); }
 }
-
-/* PAGE LOAD */
-document.addEventListener("DOMContentLoaded", loadDashboard);
 
 /* LOGOUT */
 function logout() {
@@ -320,3 +311,6 @@ function logout() {
 
 /* MOBILE FIX */
 window.addEventListener("load", () => { document.body.style.display = "block"; });
+
+/* INIT DASHBOARD */
+document.addEventListener("DOMContentLoaded", loadDashboard);
