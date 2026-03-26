@@ -39,20 +39,18 @@ function showToast(msg){
 }
 
 /* TRANSACTION ID */
-
 function generateTransactionID(){
   return "MC"+Date.now()+Math.floor(Math.random()*1000);
 }
 
 /* WALLET ANIMATION */
-
 function animateWallet(newBalance){
 
   const wallet = el("walletBalance");
 
   if(!wallet) return;
 
-  let current = parseFloat(wallet.innerText.replace("₦",""));
+  let current = parseFloat(wallet.innerText.replace("₦","")) || 0;
 
   const step = (current - newBalance)/20;
 
@@ -72,7 +70,6 @@ function animateWallet(newBalance){
 }
 
 /* SAVE TRANSACTION */
-
 function saveTransaction(tx){
 
   let history=JSON.parse(localStorage.getItem("transactions") || "[]");
@@ -84,7 +81,6 @@ function saveTransaction(tx){
 }
 
 /* RENDER TRANSACTIONS */
-
 function renderTransactions(){
 
   const history=JSON.parse(localStorage.getItem("transactions") || "[]");
@@ -114,7 +110,6 @@ function renderTransactions(){
 }
 
 /* NETWORK PREFIX */
-
 const NETWORK_PREFIX={
 MTN:["0803","0806","0703","0706","0813","0816","0810","0814","0903","0906","0913","0916"],
 AIRTEL:["0802","0808","0701","0708","0812","0901","0902","0907","0911","0912"],
@@ -123,7 +118,6 @@ GLO:["0805","0807","0705","0811","0815","0905","0915"],
 }
 
 /* DETECT NETWORK */
-
 function detectNetwork(phone){
 
 if(!phone) return null
@@ -145,7 +139,6 @@ return null
 }
 
 /* NETWORK LOGO */
-
 function showNetworkLogo(network){
 
 const logo=el("networkLogo")
@@ -153,14 +146,13 @@ const logo=el("networkLogo")
 if(!logo) return
 
 const logos={
-MTN:"images/Mtn.png",
+MTN:"images/MTN.png",
 AIRTEL:"images/Airtel.png",
 GLO:"images/Glo.png",
 "9MOBILE":"images/9mobile.png"
 }
 
 logo.src=logos[network]||""
-
 logo.style.display="block"
 
 }
@@ -211,7 +203,14 @@ plans.forEach(plan=>{
 
 const name=plan.plan||plan.name||"Data Plan"
 const price=plan.price||plan.amount||0
-const validity=plan.validity||"N/A"
+
+/* VALIDITY FIX */
+let validity = plan.validity || plan.validity_days || plan.duration || plan.validity_text || "N/A"
+
+if(typeof validity === "number"){
+validity = validity + " Days"
+}
+
 const id=plan.plan_id||plan.id
 
 const card=document.createElement("div")
@@ -399,10 +398,6 @@ showToast("Enter PIN")
 return
 }
 
-const balanceText=el("walletBalance")?.innerText || "₦0"
-
-const balance=parseFloat(balanceText.replace("₦",""))
-
 let amount=0
 
 if(purchaseType==="airtime"){
@@ -413,6 +408,8 @@ if(selectedCard){
 amount=parseFloat(selectedCard.dataset.price||0)
 }
 }
+
+const balance=parseFloat((el("walletBalance")?.innerText||"₦0").replace("₦",""))
 
 if(balance < amount){
 showToast("Insufficient funds")
@@ -433,6 +430,8 @@ closePinModal()
 
 async function biometricLogin(){
 
+if(localStorage.getItem("biometricEnabled")!=="true") return
+
 try{
 
 if(!window.PublicKeyCredential) return
@@ -445,100 +444,11 @@ userVerification:"required"
 }
 })
 
-showToast("Biometric verified")
-
 }catch(e){
 
-showToast("Biometric authentication cancelled")
+console.log("Biometric skipped")
 
 }
-
-}
-
-/* PROFESSIONAL RECEIPT */
-
-function showReceipt(tx){
-
-const overlay=document.createElement("div")
-
-overlay.className="receiptOverlay"
-
-overlay.innerHTML=`
-
-<div class="receiptModal" id="receiptCard">
-
-<h3>MayConnect Receipt</h3>
-
-<p><b>Reference:</b> ${tx.id}</p>
-<p><b>Type:</b> ${tx.type}</p>
-<p><b>Network:</b> ${tx.network}</p>
-<p><b>Phone:</b> ${tx.phone}</p>
-<p><b>Amount:</b> ₦${tx.amount}</p>
-<p><b>Status:</b> ${tx.status}</p>
-<p><b>Date:</b> ${tx.date}</p>
-
-<div style="margin-top:15px">
-
-<button onclick="downloadReceipt()">Download</button>
-
-<button onclick="shareReceipt()">Share</button>
-
-<button onclick="this.parentElement.parentElement.parentElement.remove()">Close</button>
-
-</div>
-
-</div>
-
-`
-
-Object.assign(overlay.style,{
-position:"fixed",
-top:"0",
-left:"0",
-width:"100%",
-height:"100%",
-background:"rgba(0,0,0,0.6)",
-display:"flex",
-justifyContent:"center",
-alignItems:"center",
-zIndex:10000
-})
-
-document.body.appendChild(overlay)
-
-}
-
-/* DOWNLOAD RECEIPT */
-
-function downloadReceipt(){
-
-html2canvas(document.getElementById("receiptCard")).then(canvas=>{
-
-const link=document.createElement("a")
-
-link.download="mayconnect_receipt.png"
-
-link.href=canvas.toDataURL()
-
-link.click()
-
-})
-
-}
-
-/* SHARE RECEIPT */
-
-async function shareReceipt(){
-
-if(!navigator.share){
-showToast("Sharing not supported")
-return
-}
-
-await navigator.share({
-title:"MayConnect Receipt",
-text:"Transaction completed on MayConnect"
-})
 
 }
 
@@ -571,9 +481,13 @@ if(el("walletBalance")){
 el("walletBalance").innerText=`₦${user.wallet_balance||0}`
 }
 
-if(user.is_admin||user.username==="admin"){
+/* ADMIN FIX (Admin capital supported) */
 
-el("adminPanel")?.classList.remove("hidden")
+const adminPanel=el("adminPanel")
+
+if(user.is_admin || user.username==="Admin"){
+
+if(adminPanel) adminPanel.classList.remove("hidden")
 
 const profitEl=el("profitBalance")
 
@@ -583,7 +497,7 @@ profitEl.innerText=`₦${user.admin_wallet||0}`
 
 }else{
 
-el("adminPanel")?.classList.add("hidden")
+if(adminPanel) adminPanel.classList.add("hidden")
 
 }
 
@@ -596,55 +510,7 @@ showToast("Failed to load dashboard")
 }
 
 const loader=el("dashboardLoader")
-
 if(loader) loader.remove()
-
-}
-
-/* ADMIN WITHDRAW */
-
-async function adminWithdraw(){
-
-const amount=el("withdrawAmount")?.value
-const bank=el("bankName")?.value
-const account_number=el("accountNumber")?.value
-
-if(!amount||!bank||!account_number){
-showToast("Fill all fields")
-return
-}
-
-try{
-
-const res=await fetch(`${API}/api/admin/withdraw`,{
-
-method:"POST",
-
-headers:{
-"Content-Type":"application/json",
-Authorization:`Bearer ${getToken()}`
-},
-
-body:JSON.stringify({
-amount,
-bank,
-account_number,
-account_name:bank
-})
-
-})
-
-const data=await res.json()
-
-showToast(data.message||"Withdrawal completed")
-
-loadDashboard()
-
-}catch(e){
-
-showToast("Withdrawal failed")
-
-}
 
 }
 
@@ -654,16 +520,9 @@ function logout(){
 
 localStorage.removeItem("token")
 
-window.location="login.html"
+window.location.replace("login.html")
 
 }
-
-/* FIX LOADER */
-
-window.addEventListener("load",()=>{
-const loader=el("dashboardLoader")
-if(loader) loader.style.display="none"
-})
 
 /* INIT */
 
