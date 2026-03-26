@@ -45,13 +45,8 @@ body{
 }
 
 /* HEADER */
-.logo-circle{
-  text-align:center;
-  margin-top:20px;
-}
-.logo-circle img{
-  width:90px;
-}
+.logo-circle{text-align:center;margin-top:20px;}
+.logo-circle img{width:90px;}
 
 /* WALLET */
 .wallet-card{
@@ -61,9 +56,7 @@ body{
   margin:20px;
   text-align:center;
 }
-.wallet-card strong{
-  font-size:30px;
-}
+.wallet-card strong{font-size:30px;}
 
 /* ADMIN PANEL */
 .admin-card{
@@ -114,9 +107,7 @@ body{
   justify-content:center;
   box-shadow:0 5px 20px rgba(0,0,0,0.5);
 }
-.quickActions span{
-  font-size:10px;
-}
+.quickActions span{font-size:10px;}
 
 /* POPULAR PLAN */
 .popular-plan{
@@ -200,8 +191,8 @@ body{
   text-align:left;
 }
 
-/* PIN MODAL */
-.pinModal{
+/* PIN & PASSWORD MODAL */
+.modal{
   position:fixed;
   top:0;
   left:0;
@@ -213,21 +204,15 @@ body{
   justify-content:center;
   z-index:6000;
 }
-.pinBox{
+.modalBox{
   background:#050b18;
   padding:25px;
   border-radius:12px;
   border:1px solid #3b78e7;
   text-align:center;
 }
-.pinInputs{
-  display:flex;
-  gap:10px;
-  justify-content:center;
-  margin-top:15px;
-}
-.pinInputs input{
-  width:45px;
+.modalBox input{
+  width:60px;
   height:50px;
   font-size:22px;
   text-align:center;
@@ -235,6 +220,14 @@ body{
   border:1px solid #3b78e7;
   background:black;
   color:white;
+  margin:0 5px;
+}
+.modalBox input.fullInput{
+  width:80%;
+  margin:5px 0;
+  font-size:16px;
+  text-align:left;
+  padding:10px;
 }
 
 /* BOTTOM NAV */
@@ -259,9 +252,7 @@ body{
   align-items:center;
   font-size:20px;
 }
-.bottomNav span{
-  font-size:11px;
-}
+.bottomNav span{font-size:11px;}
 </style>
 </head>
 
@@ -334,9 +325,9 @@ body{
     <h3 id="profileName">User</h3>
     <p id="profileEmail">email@email.com</p>
   </div>
-  <button id="setPinBtn" class="profileBtn" onclick="openPinModal()">🔐 Set Transaction PIN</button>
-  <button id="changePinBtn" class="profileBtn" style="display:none;">🔑 Change PIN</button>
-  <button class="profileBtn">🔒 Change Password</button>
+  <button id="setPinBtn" class="profileBtn" onclick="openPinModal('setPin')">🔐 Set Transaction PIN</button>
+  <button id="changePinBtn" class="profileBtn" onclick="openPinModal('changePin')" style="display:none;">🔑 Change PIN</button>
+  <button class="profileBtn" onclick="openPasswordModal()">🔒 Change Password</button>
   <button class="profileBtn" onclick="toggleBiometric()">🧬 Enable Biometric Login/Purchase</button>
   <button class="profileBtn" onclick="callSupport()">📞 Call Support</button>
   <button class="profileBtn" onclick="chatSupport()">💬 Contact Developer</button>
@@ -345,16 +336,27 @@ body{
 </div>
 
 <!-- PIN MODAL -->
-<div id="pinModal" class="pinModal">
-  <div class="pinBox">
-    <h3>Create Transaction PIN</h3>
-    <div class="pinInputs">
-      <input maxlength="1" oninput="movePin(this,0)">
-      <input maxlength="1" oninput="movePin(this,1)">
-      <input maxlength="1" oninput="movePin(this,2)">
-      <input maxlength="1" oninput="movePin(this,3)">
+<div id="pinModal" class="modal">
+  <div class="modalBox">
+    <h3 id="pinModalTitle">Enter Transaction PIN</h3>
+    <div id="pinInputsContainer" class="pinInputs">
+      <input maxlength="1">
+      <input maxlength="1">
+      <input maxlength="1">
+      <input maxlength="1">
     </div>
-    <button style="margin-top:20px" onclick="savePin()">Save PIN</button>
+    <button style="margin-top:20px" onclick="saveOrChangePin()">Submit</button>
+  </div>
+</div>
+
+<!-- PASSWORD MODAL -->
+<div id="passwordModal" class="modal">
+  <div class="modalBox">
+    <h3>Change Password</h3>
+    <input type="password" id="currentPassword" class="fullInput" placeholder="Current Password">
+    <input type="password" id="newPassword" class="fullInput" placeholder="New Password">
+    <input type="password" id="confirmPassword" class="fullInput" placeholder="Confirm New Password">
+    <button style="margin-top:20px" onclick="changePassword()">Change Password</button>
   </div>
 </div>
 
@@ -372,6 +374,24 @@ body{
 function toggleProfile(){
   document.getElementById("profilePanel").classList.toggle("show");
 }
+function openPinModal(mode){
+  window.pinMode = mode; // setPin or changePin
+  document.getElementById("pinModal").style.display="flex";
+  document.getElementById("pinModalTitle").innerText = mode==="setPin"?"Set Transaction PIN":"Change Transaction PIN";
+  document.querySelectorAll("#pinInputsContainer input").forEach(i=>i.value="");
+}
+function closePinModal(){
+  document.getElementById("pinModal").style.display="none";
+}
+function openPasswordModal(){
+  document.getElementById("passwordModal").style.display="flex";
+  document.getElementById("currentPassword").value="";
+  document.getElementById("newPassword").value="";
+  document.getElementById("confirmPassword").value="";
+}
+function closePasswordModal(){
+  document.getElementById("passwordModal").style.display="none";
+}
 
 /* SUPPORT */
 function callSupport(){ window.location.href="tel:08117988561"; }
@@ -380,9 +400,7 @@ function chatSupport(){ window.location.href="https://wa.me/2348117988561"; }
 /* WELCOME SOUND + SHOW BODY AFTER LOAD */
 window.addEventListener("load", ()=>{
   document.body.style.display="block";
-  setTimeout(()=>{
-    document.getElementById("welcomeSound")?.play().catch(()=>{});
-  },1200);
+  setTimeout(()=>{ document.getElementById("welcomeSound")?.play().catch(()=>{}); },1200);
 });
 </script>
 </body>

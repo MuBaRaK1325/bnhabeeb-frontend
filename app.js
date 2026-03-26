@@ -44,6 +44,24 @@ function saveTransaction(tx) {
   localStorage.setItem("transactions", JSON.stringify(history));
 }
 
+/* RENDER TRANSACTIONS */
+function renderTransactions() {
+  const history = JSON.parse(localStorage.getItem("transactions") || "[]");
+  const container = el("transactionHistory");
+  if (!container) return;
+  container.innerHTML = "";
+  history.slice(0, 5).forEach(tx => {
+    const div = document.createElement("div");
+    div.className = "transaction-card";
+    div.innerHTML = `
+      <p><strong>${tx.type}</strong> - ₦${tx.amount}</p>
+      <p>${tx.phone} (${tx.network})</p>
+      <p>${tx.date}</p>
+    `;
+    container.appendChild(div);
+  });
+}
+
 /* NETWORK PREFIX */
 const NETWORK_PREFIX = {
   MTN: ["0803","0806","0703","0706","0813","0816","0810","0814","0903","0906","0913","0916"],
@@ -117,7 +135,8 @@ async function loadDataPlans(network) {
       `;
       container.appendChild(card);
     });
-  } catch {
+  } catch (e) {
+    console.error(e);
     showToast("Failed to load plans");
   }
 }
@@ -161,7 +180,9 @@ async function buyData(planId, pin) {
     };
     saveTransaction(tx);
     showReceipt(tx);
-  } catch {
+    renderTransactions();
+  } catch (e) {
+    console.error(e);
     showToast("Network error");
   }
 }
@@ -191,7 +212,9 @@ async function buyAirtime(phone, amount, pin) {
     };
     saveTransaction(tx);
     showReceipt(tx);
-  } catch {
+    renderTransactions();
+  } catch (e) {
+    console.error(e);
     showToast("Network error");
   }
 }
@@ -213,6 +236,12 @@ function enableBiometric() {
   localStorage.setItem("biometric", "true");
   showToast("Biometric enabled");
 }
+function toggleBiometric() {
+  if (localStorage.getItem("biometric")) {
+    localStorage.removeItem("biometric");
+    showToast("Biometric disabled");
+  } else enableBiometric();
+}
 function confirmBiometric() {
   const savedPin = localStorage.getItem("userPin");
   if (!localStorage.getItem("biometric")) { showToast("Enable biometric first"); return; }
@@ -225,6 +254,12 @@ function confirmBiometric() {
 }
 
 /* SAVE PIN */
+function movePin(input, index) {
+  if (input.value.length === 1) {
+    const inputs = document.querySelectorAll(".pinInputs input");
+    if (index < inputs.length - 1) inputs[index+1].focus();
+  }
+}
 function savePin() {
   const pinInputs = document.querySelectorAll(".pinInputs input");
   const pin = Array.from(pinInputs).map(i => i.value).join("");
@@ -236,11 +271,12 @@ function savePin() {
   closePinModal();
 }
 
-/* RECEIPT */
+/* RECEIPT MODAL */
 function showReceipt(tx) {
-  const div = document.createElement("div");
-  div.innerHTML = `
-    <div class="receipt">
+  const overlay = document.createElement("div");
+  overlay.className = "receiptOverlay";
+  overlay.innerHTML = `
+    <div class="receiptModal">
       <h3>MayConnect Receipt</h3>
       <p>Reference: ${tx.id}</p>
       <p>Type: ${tx.type}</p>
@@ -249,9 +285,16 @@ function showReceipt(tx) {
       <p>Amount: ₦${tx.amount}</p>
       <p>Status: ${tx.status}</p>
       <p>Date: ${tx.date}</p>
+      <button onclick="this.parentElement.parentElement.remove()">Close</button>
     </div>
   `;
-  document.body.appendChild(div);
+  Object.assign(overlay.style, {
+    position: "fixed",
+    top: "0", left: "0", width: "100%", height: "100%",
+    background: "rgba(0,0,0,0.6)", display: "flex",
+    justifyContent: "center", alignItems: "center", zIndex: 10000
+  });
+  document.body.appendChild(overlay);
 }
 
 /* DASHBOARD */
@@ -266,8 +309,8 @@ async function loadDashboard() {
     if (el("walletBalance")) el("walletBalance").innerText = `₦${user.wallet_balance || 0}`;
 
     /* ADMIN PANEL */
-    if (user.is_Admin) {
-      el("AdminPanel")?.classList.remove("hidden");
+    if (user.is_admin) {
+      el("adminPanel")?.classList.remove("hidden");
       const profitEl = el("profitBalance");
       if (profitEl) profitEl.innerText = `₦${user.admin_wallet || 0}`;
     } else el("adminPanel")?.classList.add("hidden");
@@ -281,7 +324,10 @@ async function loadDashboard() {
       el("changePinBtn")?.classList.add("hidden");
     }
 
-  } catch (e) { console.log(e); showToast("Failed to load dashboard"); }
+    /* RENDER TRANSACTIONS */
+    renderTransactions();
+
+  } catch (e) { console.error(e); showToast("Failed to load dashboard"); }
   el("dashboardLoader")?.remove();
 }
 
@@ -300,7 +346,7 @@ async function adminWithdraw() {
     const data = await res.json();
     showToast(data.message || "Withdrawal completed");
     loadDashboard();
-  } catch { showToast("Withdrawal failed"); }
+  } catch (e) { console.error(e); showToast("Withdrawal failed"); }
 }
 
 /* LOGOUT */
