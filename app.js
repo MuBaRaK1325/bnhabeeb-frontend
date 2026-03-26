@@ -138,8 +138,7 @@ async function loadDataPlans(network) {
     plans.forEach(plan => {
       const name = plan.plan || plan.name || "Data Plan";
       const price = plan.price || plan.amount || 0;
-      let validity = plan.validity || plan.validity_days || plan.duration || plan.validity_text || "N/A";
-      if (typeof validity === "number") validity += " Days";
+      const validity = plan.validity || "N/A"; // ensure consistent API
       const id = plan.plan_id || plan.id;
       const card = document.createElement("div");
       card.className = "planCard";
@@ -184,6 +183,12 @@ function openPinModal(plan, type) {
       <input type="password" id="pinInput" placeholder="Enter 4-digit PIN" maxlength="4">
       <button onclick="savePin()">Save PIN</button>
     `;
+  } else if (type === "data" || type === "airtime") {
+    title.innerText = "Enter Transaction PIN";
+    body.innerHTML = `
+      <input type="password" id="pin" placeholder="PIN" maxlength="4">
+      <button onclick="confirmPurchase()">Confirm</button>
+    `;
   } else if (type === "changePin") {
     title.innerText = "Change Transaction PIN";
     body.innerHTML = `
@@ -199,12 +204,6 @@ function openPinModal(plan, type) {
       <input type="password" id="newPassword" placeholder="New Password">
       <input type="password" id="confirmPassword" placeholder="Confirm Password">
       <button onclick="changePassword()">Change Password</button>
-    `;
-  } else if (type === "data" || type === "airtime") {
-    title.innerText = "Enter Transaction PIN";
-    body.innerHTML = `
-      <input type="password" id="pin" placeholder="PIN" maxlength="4">
-      <button onclick="confirmPurchase()">Confirm</button>
     `;
   }
 }
@@ -226,98 +225,17 @@ function verifyPin(pin) {
   return localStorage.getItem("userPin") === pin;
 }
 
-function changePin() {
-  const current = el("currentPin")?.value;
-  const newPin = el("newPin")?.value;
-  const confirm = el("confirmPin")?.value;
-  if (!current || !newPin || !confirm) return showToast("All fields required");
-  if (!verifyPin(current)) return showToast("Current PIN incorrect");
-  if (newPin !== confirm) return showToast("New PIN and Confirm PIN do not match");
-  localStorage.setItem("userPin", newPin);
-  showToast("Transaction PIN changed successfully");
-  closePinModal();
-}
-
-/* PASSWORD */
-async function changePassword() {
-  const current = el("currentPassword")?.value;
-  const newPass = el("newPassword")?.value;
-  const confirm = el("confirmPassword")?.value;
-  if (!current || !newPass || !confirm) return showToast("All fields required");
-  if (newPass !== confirm) return showToast("New password and confirm do not match");
-
-  try {
-    const res = await fetch(`${API}/api/change-password`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json", Authorization: `Bearer ${getToken()}` },
-      body: JSON.stringify({ current_password: current, new_password: newPass })
-    });
-    const data = await res.json();
-    if (data.error) return showToast(data.error);
-    showToast("Password changed successfully");
-    closePinModal();
-  } catch (e) {
-    showToast("Network error");
+/* PURCHASE HANDLERS */
+function purchasePlan(planId) {
+  selectedPlan = planId;
+  purchaseType = "data";
+  if (!localStorage.getItem("userPin")) {
+    openPinModal(null, "setPin");
+  } else {
+    openPinModal(planId, "data");
   }
 }
 
-/* PURCHASE ACTIONS */
-async function buyData(planId, pin) {
-  const phone = el("phone")?.value || "N/A";
-  try {
-    const res = await fetch(`${API}/api/buy-data`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json", Authorization: `Bearer ${getToken()}` },
-      body: JSON.stringify({ plan_id: planId, phone, pin })
-    });
-    const data = await res.json();
-    if (!data.message) return showToast(data.error || "Transaction failed");
-    successSound.play();
-    const tx = {
-      id: generateTransactionID(),
-      type: "DATA",
-      network: detectNetwork(phone),
-      phone,
-      amount: data.amount || data.price || 0,
-      status: "SUCCESS",
-      date: new Date().toLocaleString()
-    };
-    saveTransaction(tx);
-    showReceipt(tx);
-    renderTransactions();
-    animateWallet(data.wallet_balance || 0);
-    loadDashboard();
-  } catch (e) { showToast("Network error"); }
-}
-
-async function buyAirtime(phone, amount, pin) {
-  try {
-    const res = await fetch(`${API}/api/buy-airtime`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json", Authorization: `Bearer ${getToken()}` },
-      body: JSON.stringify({ network: detectNetwork(phone), phone, amount, pin })
-    });
-    const data = await res.json();
-    if (!data.message) return showToast(data.error || "Transaction failed");
-    successSound.play();
-    const tx = {
-      id: generateTransactionID(),
-      type: "AIRTIME",
-      network: detectNetwork(phone),
-      phone,
-      amount,
-      status: "SUCCESS",
-      date: new Date().toLocaleString()
-    };
-    saveTransaction(tx);
-    showReceipt(tx);
-    renderTransactions();
-    animateWallet(data.wallet_balance || 0);
-    loadDashboard();
-  } catch (e) { showToast("Network error"); }
-}
-
-/* CONFIRM PURCHASE */
 function confirmPurchase() {
   const pin = el("pin")?.value || localStorage.getItem("userPin");
   if (!pin) return showToast("Enter PIN");
@@ -336,13 +254,6 @@ function confirmPurchase() {
   else if (purchaseType === "data") buyData(selectedPlan || document.querySelector(".planCard.selected")?.dataset.planId, pin);
 
   closePinModal();
-}
-
-/* PLAN BUY HANDLER */
-function purchasePlan(planId) {
-  selectedPlan = planId;
-  purchaseType = "data";
-  openPinModal(planId, "data");
 }
 
 /* BIOMETRIC LOGIN */
@@ -373,16 +284,12 @@ async function loadDashboard() {
     if (el("walletBalance")) el("walletBalance").innerText = `₦${user.wallet_balance || 0}`;
 
     const adminPanel = el("adminPanel");
-    if (user.is_admin || user.username?.trim().toLowerCase() === "admin") {
+    if (user.is_admin === true || user.is_admin === 1 || user.username?.trim().toLowerCase() === "admin") {
       adminPanel?.classList.remove("hidden");
       el("profitBalance") && (el("profitBalance").innerText = `₦${user.admin_wallet || 0}`);
     } else adminPanel?.classList.add("hidden");
 
     renderTransactions();
-
-    // NEW USER PIN CHECK
-    if (!localStorage.getItem("userPin")) openPinModal(null, "setPin");
-
   } catch (e) {
     showToast("Failed to load dashboard");
   }
