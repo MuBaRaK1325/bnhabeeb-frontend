@@ -55,6 +55,11 @@ border-radius:12px;
 margin-top:10px;
 border:1px solid #12264f;
 cursor:pointer;
+transition:0.2s;
+}
+
+.planCard:hover{
+border-color:#3b78e7;
 }
 
 button{
@@ -102,7 +107,7 @@ max-width:350px;
 <input
 id="phone"
 placeholder="Enter phone number"
-oninput="handlePhoneInput(this)"
+oninput="detectNetworkAndShowPlans()"
 >
 
 <div class="networkBox">
@@ -125,11 +130,8 @@ oninput="handlePhoneInput(this)"
 <h3>Confirm Purchase</h3>
 
 <p id="confirmNetwork"></p>
-
 <p id="confirmPhone"></p>
-
 <p id="confirmPlan"></p>
-
 <p id="confirmPrice"></p>
 
 <hr style="margin:10px 0;border:1px solid #12264f">
@@ -152,94 +154,84 @@ oninput="handlePhoneInput(this)"
 
 <script>
 
-/* NETWORK PREFIX DETECTION */
+/* NETWORK DATA */
 
 const networks = {
 
-mtn:{
-prefix:[
-"0803","0806","0813","0816","0810","0814","0903","0906","0913","0916"
-],
-name:"MTN",
-logo:"images/mtn.png"
+MTN:{
+prefix:["0803","0806","0703","0706","0813","0816","0810","0814","0903","0906","0913","0916"],
+logo:"images/Mtn.png"
 },
 
-airtel:{
-prefix:[
-"0802","0808","0812","0701","0708","0902","0907","0901"
-],
-name:"Airtel",
-logo:"images/airtel.png"
+AIRTEL:{
+prefix:["0802","0808","0701","0708","0812","0901","0902","0907","0911","0912"],
+logo:"images/Airtel.png"
 },
 
-glo:{
-prefix:[
-"0805","0807","0811","0705","0905"
-],
-name:"Glo",
-logo:"images/glo.png"
+GLO:{
+prefix:["0805","0807","0705","0811","0815","0905","0915"],
+logo:"images/Glo.png"
 },
 
-nineMobile:{
-prefix:[
-"0809","0817","0818","0908","0909"
-],
-name:"9mobile",
+"9MOBILE":{
+prefix:["0809","0817","0818","0908","0909"],
 logo:"images/9mobile.png"
 }
 
 }
 
-/* SAMPLE DATA PLANS */
+/* DATA PLANS */
 
 const dataPlans=[
 
-{plan:"500MB",price:150,validity:"1 Day"},
-
-{plan:"1GB",price:300,validity:"7 Days"},
-
-{plan:"2GB",price:600,validity:"30 Days"},
-
-{plan:"5GB",price:1400,validity:"30 Days"}
+{id:1,plan:"500MB",price:150,validity:"1 Day"},
+{id:2,plan:"1GB",price:300,validity:"7 Days"},
+{id:3,plan:"2GB",price:600,validity:"30 Days"},
+{id:4,plan:"5GB",price:1400,validity:"30 Days"}
 
 ]
 
 let selectedNetwork=null
 let selectedPlan=null
 
+/* NETWORK DETECTION */
 
-/* PHONE INPUT */
+function detectNetworkAndShowPlans(){
 
-function handlePhoneInput(input){
+let phone=document.getElementById("phone").value.replace(/\D/g,"")
 
-const number=input.value.substring(0,4)
+if(phone.startsWith("234")){
+phone="0"+phone.slice(3)
+}
+
+const prefix=phone.substring(0,4)
 
 for(const net in networks){
 
-if(networks[net].prefix.includes(number)){
+if(networks[net].prefix.includes(prefix)){
 
-selectedNetwork=networks[net]
+selectedNetwork=net
 
-document.getElementById("networkLogo").src=selectedNetwork.logo
+document.getElementById("networkLogo").src=networks[net].logo
 document.getElementById("networkLogo").style.display="block"
 
-document.getElementById("networkName").innerText=selectedNetwork.name
+document.getElementById("networkName").innerText=net
 document.getElementById("networkName").style.display="block"
 
 showPlans()
 
+return
 }
 
 }
 
 }
 
-/* SHOW DATA PLANS */
+/* SHOW PLANS */
 
 function showPlans(){
 
 const plansDiv=document.getElementById("plans")
-
 plansDiv.innerHTML=""
 
 dataPlans.forEach(p=>{
@@ -249,17 +241,9 @@ const card=document.createElement("div")
 card.className="planCard"
 
 card.innerHTML=`
-
-<strong>${p.plan}</strong>
-
-<br>
-
-₦${p.price}
-
-<br>
-
+<strong>${p.plan}</strong><br>
+₦${p.price}<br>
 <small>Validity: ${p.validity}</small>
-
 `
 
 card.onclick=()=>openConfirmModal(p)
@@ -270,18 +254,15 @@ plansDiv.appendChild(card)
 
 }
 
-/* OPEN MODAL */
+/* OPEN CONFIRM MODAL */
 
 function openConfirmModal(plan){
 
 selectedPlan=plan
 
-document.getElementById("confirmNetwork").innerText="Network: "+selectedNetwork.name
-
+document.getElementById("confirmNetwork").innerText="Network: "+selectedNetwork
 document.getElementById("confirmPhone").innerText="Phone: "+document.getElementById("phone").value
-
 document.getElementById("confirmPlan").innerText="Plan: "+plan.plan
-
 document.getElementById("confirmPrice").innerText="Price: ₦"+plan.price
 
 document.getElementById("pinModal").classList.remove("hidden")
@@ -291,47 +272,7 @@ document.getElementById("pinModal").classList.remove("hidden")
 /* CLOSE MODAL */
 
 function closePinModal(){
-
 document.getElementById("pinModal").classList.add("hidden")
-
-}
-
-/* CONFIRM PURCHASE */
-
-async function confirmPurchase(){
-
-const pin=document.getElementById("pin").value
-
-if(!pin){
-
-alert("Enter transaction PIN")
-
-return
-
-}
-
-alert("Purchase successful (connect backend later)")
-
-closePinModal()
-
-}
-
-/* BIOMETRIC PURCHASE */
-
-function confirmBiometric(){
-
-if(localStorage.getItem("biometric")==="true"){
-
-alert("Biometric verified")
-
-confirmPurchase()
-
-}else{
-
-alert("Biometric not enabled")
-
-}
-
 }
 
 </script>
