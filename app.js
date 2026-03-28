@@ -123,7 +123,9 @@ async function fetchTransactions(){
 
 }
 
-/* NETWORK DETECTION */
+/* ============================
+NETWORK DETECTION (IMPROVED)
+============================ */
 
 const NETWORK_PREFIX={
 MTN:["0803","0806","0703","0706","0813","0816","0810","0814","0903","0906","0913","0916"],
@@ -150,10 +152,68 @@ function detectNetwork(phone){
 
   return null;
 }
+/* ============================
+NETWORK LOGO DISPLAY
+============================ */
 
-/* PIN MODAL */
+const NETWORK_LOGOS={
+  MTN:"images/Mtn.png",
+  AIRTEL:"images/Airtel.png",
+  GLO:"images/Glo.png",
+  "9MOBILE":"images/9mobile.png"
+};
+
+function handlePhoneInput(input){
+
+  const phone=input.value;
+
+  const network=detectNetwork(phone);
+
+  const logo=el("networkLogo");
+  const name=el("networkName");
+
+  if(!logo || !name) return;
+
+  if(network){
+
+    logo.src=NETWORK_LOGOS[network] || "";
+    logo.style.display="block";
+
+    name.innerText=network;
+    name.style.display="inline-block";
+
+  }else{
+
+    logo.style.display="none";
+    name.style.display="none";
+
+  }
+
+}
+/* ============================
+BIOMETRIC
+============================ */
+
+function biometricEnabled(){
+  return localStorage.getItem("biometric")==="true";
+}
+
+function confirmBiometric(){
+
+  if(!biometricEnabled()){
+    showToast("Biometric not enabled");
+    return;
+  }
+
+  confirmPurchase(true);
+}
+
+/* ============================
+PIN MODAL
+============================ */
 
 let selectedPlan=null;
+let purchaseType="data";
 
 function openPinModal(type){
 
@@ -162,82 +222,122 @@ function openPinModal(type){
 
   modal.style.display="flex";
 
-  const body=el("pinModalBody");
-
-  if(type==="setPin"){
-
-    body.innerHTML=`
-    <input id="pinInput" maxlength="4" placeholder="4 digit PIN">
-    <button onclick="savePin()">Save PIN</button>
-    `;
-
-  }else{
-
-    body.innerHTML=`
-    <input id="pinInput" maxlength="4" placeholder="Enter PIN">
-    <button onclick="confirmPurchase()">Confirm</button>
-    `;
-
-  }
-
 }
 
 function closePinModal(){
   el("pinModal").style.display="none";
 }
 
-/* SAVE PIN */
+/* ============================
+FIRST TIME PIN SETUP
+============================ */
 
-function savePin(){
+function openFirstPinSetup(){
 
-  const pin=el("pinInput").value;
+  const modal = document.createElement("div");
 
-  if(pin.length!==4){
-    showToast("Enter 4 digit PIN");
+  modal.innerHTML=`
+  <div style="
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,0.8);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  z-index:9999">
+
+  <div style="
+  background:#08142c;
+  padding:25px;
+  border-radius:12px;
+  width:90%;
+  max-width:350px">
+
+  <h3>Create Transaction PIN</h3>
+
+  <input id="firstPin" placeholder="Enter 4 digit PIN">
+
+  <input id="confirmFirstPin" placeholder="Confirm PIN">
+
+  <button onclick="saveFirstPin()">Save PIN</button>
+
+  </div>
+  </div>
+  `;
+
+  document.body.appendChild(modal);
+}
+
+function saveFirstPin(){
+
+  const p1 = el("firstPin").value;
+  const p2 = el("confirmFirstPin").value;
+
+  if(p1.length!==4){
+    showToast("PIN must be 4 digits");
     return;
   }
 
-  localStorage.setItem("userPin",pin);
+  if(p1!==p2){
+    showToast("PIN mismatch");
+    return;
+  }
 
-  showToast("PIN saved");
-  closePinModal();
+  localStorage.setItem("userPin",p1);
 
+  showToast("Transaction PIN created");
+
+  location.reload();
 }
 
-/* PURCHASE PLAN */
+/* ============================
+PURCHASE PLAN
+============================ */
 
-function purchasePlan(planId){
+function purchasePlan(planId,type="data"){
 
   selectedPlan = planId;
+  purchaseType = type;
 
   if(!localStorage.getItem("userPin")){
-    openPinModal("setPin");
+    openFirstPinSetup();
   }else{
-    openPinModal("confirm");
+    openPinModal();
   }
 
 }
 
-/* CONFIRM PURCHASE */
+/* ============================
+CONFIRM PURCHASE
+============================ */
 
-async function confirmPurchase(){
+async function confirmPurchase(biometric=false){
 
-  const pin = el("pinInput").value;
+  const pin = el("pin")?.value;
   const phone = el("phone")?.value;
 
-  if(!pin){
-    showToast("Enter PIN");
-    return;
+  if(!biometric){
+
+    if(!pin){
+      showToast("Enter PIN");
+      return;
+    }
+
   }
 
   if(!phone){
-    showToast("Enter phone");
+    showToast("Enter phone number");
     return;
   }
 
+  const endpoint =
+    purchaseType==="airtime"
+    ? "/api/buy-airtime"
+    : "/api/buy-data";
+
   try{
 
-    const res = await safeFetch(`${API}/api/buy-data`,{
+    const res = await safeFetch(`${API}${endpoint}`,{
 
       method:"POST",
 
@@ -282,7 +382,82 @@ async function confirmPurchase(){
 
 }
 
-/* ADMIN TRANSACTIONS */
+/* ============================
+CHANGE PASSWORD
+============================ */
+
+async function changePassword(){
+
+  const current = prompt("Enter current password");
+  const newPass = prompt("Enter new password");
+  const confirm = prompt("Confirm new password");
+
+  if(newPass!==confirm){
+    showToast("Password mismatch");
+    return;
+  }
+
+  try{
+
+    const res = await safeFetch(`${API}/api/change-password`,{
+
+      method:"POST",
+
+      headers:{
+        "Content-Type":"application/json",
+        Authorization:`Bearer ${getToken()}`
+      },
+
+      body:JSON.stringify({
+        currentPassword:current,
+        newPassword:newPass
+      })
+
+    });
+
+    const data = await res.json();
+
+    showToast(data.message);
+
+  }catch(e){
+
+    showToast("Password change failed");
+
+  }
+
+}
+
+/* ============================
+CHANGE PIN
+============================ */
+
+function changePin(){
+
+  const current = prompt("Current PIN");
+  const newPin = prompt("New PIN");
+  const confirm = prompt("Confirm PIN");
+
+  if(newPin!==confirm){
+    showToast("PIN mismatch");
+    return;
+  }
+
+  const savedPin = localStorage.getItem("userPin");
+
+  if(current!==savedPin){
+    showToast("Wrong current PIN");
+    return;
+  }
+
+  localStorage.setItem("userPin",newPin);
+
+  showToast("PIN updated");
+
+}
+
+/* ============================
+ADMIN TRANSACTIONS
+============================ */
 
 async function loadAdminTransactions(){
 
@@ -336,7 +511,9 @@ async function loadAdminTransactions(){
 
 }
 
-/* DASHBOARD */
+/* ============================
+DASHBOARD
+============================ */
 
 async function loadDashboard(){
 
@@ -385,7 +562,7 @@ async function loadDashboard(){
     }
 
     if(!localStorage.getItem("userPin")){
-      setTimeout(()=>openPinModal("setPin"),1000);
+      setTimeout(()=>openFirstPinSetup(),1200);
     }
 
     connectWalletWebSocket();
@@ -397,8 +574,6 @@ async function loadDashboard(){
     showToast("Dashboard loading failed");
 
   }
-
-  /* LOADER ALWAYS HIDE */
 
   setTimeout(hideLoader,500);
 

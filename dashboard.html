@@ -18,6 +18,8 @@ padding-bottom:90px;
 display:none;
 }
 
+/* LOADER */
+
 #dashboardLoader{
 position:fixed;
 top:0;
@@ -46,8 +48,32 @@ animation:spin 1s linear infinite;
 100%{transform:rotate(360deg)}
 }
 
-.logo-circle{text-align:center;margin-top:20px;}
-.logo-circle img{width:90px;}
+/* HEADER */
+
+.header{
+display:flex;
+justify-content:space-between;
+align-items:center;
+padding:15px;
+}
+
+.logo-circle img{
+width:80px;
+}
+
+.profileIcon{
+background:#08142c;
+border:1px solid #3b78e7;
+width:40px;
+height:40px;
+border-radius:50%;
+display:flex;
+align-items:center;
+justify-content:center;
+cursor:pointer;
+}
+
+/* WALLET */
 
 .wallet-card{
 background:linear-gradient(135deg,#3b78e7,#274ea3);
@@ -57,7 +83,11 @@ margin:20px;
 text-align:center;
 }
 
-.wallet-card strong{font-size:30px;}
+.wallet-card strong{
+font-size:30px;
+}
+
+/* ADMIN PANEL */
 
 .admin-card{
 background:#08142c;
@@ -67,12 +97,34 @@ border-radius:16px;
 display:none;
 }
 
+.admin-section{
+margin-top:20px;
+padding:10px;
+background:#050b18;
+border-radius:10px;
+}
+
+.adminBtn{
+width:100%;
+margin-top:8px;
+padding:10px;
+background:#112c64;
+border:none;
+color:white;
+border-radius:8px;
+cursor:pointer;
+}
+
+/* TRANSACTIONS */
+
 .transaction-card{
 background:#0c1a36;
 padding:12px;
 border-radius:12px;
 margin:10px 20px;
 }
+
+/* QUICK ACTIONS */
 
 .quickActions{
 position:fixed;
@@ -97,15 +149,48 @@ align-items:center;
 justify-content:center;
 }
 
-.bottomNav{
+/* PROFILE PANEL */
+
+.profilePanel{
 position:fixed;
 bottom:0;
+left:0;
 width:100%;
-height:70px;
-background:#08142c;
+height:100%;
+background:#000;
+transform:translateY(100%);
+transition:0.4s;
+z-index:5000;
+padding:20px;
+overflow:auto;
+}
+
+.profilePanel.show{
+transform:translateY(0);
+border-top:2px solid #3b78e7;
+}
+
+.avatar{
+width:80px;
+height:80px;
+border-radius:50%;
+background:#3b78e7;
 display:flex;
-justify-content:space-around;
 align-items:center;
+justify-content:center;
+font-size:30px;
+margin:auto;
+}
+
+.profileBtn{
+width:100%;
+padding:14px;
+margin-top:12px;
+background:#050b18;
+border:1px solid #3b78e7;
+border-radius:10px;
+color:white;
+text-align:left;
 }
 
 </style>
@@ -114,14 +199,22 @@ align-items:center;
 <body>
 
 <!-- LOADER -->
+
 <div id="dashboardLoader">
 <div class="loader"></div>
 <p style="margin-top:15px">Loading dashboard...</p>
 </div>
 
 <!-- HEADER -->
+
+<div class="header">
+
 <div class="logo-circle">
 <img src="images/logo.png">
+</div>
+
+<div class="profileIcon" onclick="toggleProfile()">👤</div>
+
 </div>
 
 <div style="text-align:center;margin-bottom:10px;">
@@ -129,15 +222,40 @@ align-items:center;
 </div>
 
 <!-- WALLET -->
+
 <div class="wallet-card">
 <p>Wallet Balance</p>
 <strong id="walletBalance">₦0</strong>
 </div>
 
 <!-- ADMIN PANEL -->
+
 <div id="adminPanel" class="admin-card">
 
-<h3>Admin Profit Withdrawal</h3>
+<h3>⚙ Admin Control Panel</h3>
+
+<!-- USER MANAGEMENT -->
+
+<div class="admin-section">
+<h4>👥 User Management</h4>
+<button class="adminBtn" onclick="viewUsers()">View All Users</button>
+<button class="adminBtn" onclick="searchUser()">Search User</button>
+<button class="adminBtn" onclick="banUser()">Ban User</button>
+<button class="adminBtn" onclick="deleteUser()">Delete User</button>
+</div>
+
+<!-- WALLET CONTROL -->
+
+<div class="admin-section">
+<h4>💰 Wallet Control</h4>
+<button class="adminBtn" onclick="creditWallet()">Credit Wallet</button>
+<button class="adminBtn" onclick="debitWallet()">Debit Wallet</button>
+</div>
+
+<!-- FINANCE -->
+
+<div class="admin-section">
+<h4>🏦 Finance</h4>
 
 <p>Total Profit</p>
 <strong id="profitBalance">₦0</strong>
@@ -148,11 +266,23 @@ align-items:center;
 
 <input type="text" id="accountNumber" placeholder="Account Number">
 
-<button onclick="adminWithdraw()">Withdraw Profit</button>
+<button class="adminBtn" onclick="adminWithdraw()">Withdraw Profit</button>
+
+<button class="adminBtn" onclick="approveDeposits()">Approve Deposits</button>
+</div>
+
+<!-- MONITORING -->
+
+<div class="admin-section">
+<h4>📊 Monitoring</h4>
+<button class="adminBtn" onclick="seeTransactions()">See All Transactions</button>
+<button class="adminBtn" onclick="livePurchases()">See Live Purchases</button>
+</div>
 
 </div>
 
 <!-- POPULAR PLAN -->
+
 <div style="margin:20px;background:#112c64;padding:15px;border-radius:12px;text-align:center">
 
 <h4>🔥 Most Popular Data Plan</h4>
@@ -164,11 +294,13 @@ align-items:center;
 </div>
 
 <!-- TRANSACTIONS -->
+
 <h3 style="margin-left:20px;">Recent Transactions</h3>
 
 <div id="transactionHistory"></div>
 
 <!-- QUICK ACTIONS -->
+
 <div class="quickActions">
 
 <button onclick="location.href='data.html'">📶<span>Data</span></button>
@@ -179,15 +311,63 @@ align-items:center;
 
 </div>
 
+<!-- PROFILE PANEL -->
+
+<div id="profilePanel" class="profilePanel">
+
+<div style="text-align:center">
+
+<div id="avatar" class="avatar">U</div>
+
+<h3 id="profileName">User</h3>
+
+<p id="profileEmail">email@email.com</p>
+
+</div>
+
+<button class="profileBtn" onclick="changePin()">🔑 Change Transaction PIN</button>
+
+<button class="profileBtn" onclick="changePassword()">🔒 Change Password</button>
+
+<button class="profileBtn" onclick="toggleBiometric()">🧬 Enable Biometric</button>
+
+<button class="profileBtn" onclick="callSupport()">📞 Call Support</button>
+
+<button class="profileBtn" onclick="contactDeveloper()">💬 Contact Developer</button>
+
+<button class="profileBtn" onclick="logout()">🚪 Logout</button>
+
+<button class="profileBtn" onclick="toggleProfile()">⬇ Close</button>
+
+</div>
+
 <script src="app.js"></script>
 
 <script>
+
+/* PROFILE PANEL */
+
+function toggleProfile(){
+document.getElementById("profilePanel").classList.toggle("show");
+}
+
+/* SUPPORT */
+
+function callSupport(){
+window.location.href="tel:08117988561";
+}
+
+function contactDeveloper(){
+window.location.href="https://wa.me/2348117988561";
+}
+
+/* POPULAR PLAN */
 
 document.getElementById("popularPlanBtn").onclick=()=>{
 purchasePlan("popular-plan");
 }
 
-/* emergency loader protection */
+/* EMERGENCY LOADER */
 
 setTimeout(()=>{
 document.getElementById("dashboardLoader").style.display="none";
