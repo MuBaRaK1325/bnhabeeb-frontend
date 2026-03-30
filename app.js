@@ -4,6 +4,21 @@ const welcomeSound=new Audio("sounds/welcome.mp3")
 const successSound=new Audio("sounds/success.mp3")
 
 let cachedPlans=[]
+let currentBalance=0
+
+/* NETWORK PREFIX MAP */
+
+const networkPrefixes={
+MTN:["0803","0806","0703","0706","0813","0816","0810","0814","0903","0906"],
+Airtel:["0802","0808","0708","0812","0701","0902","0907"],
+Glo:["0805","0705","0815","0811","0905"],
+}
+
+const networkLogos={
+MTN:"images/mtn.png",
+Airtel:"images/airtel.png",
+Glo:"images/glo.png"
+}
 
 function getToken(){
 return localStorage.getItem("token")
@@ -37,7 +52,11 @@ setTimeout(()=>t.remove(),3000)
 
 }
 
+/* WALLET */
+
 function animateWallet(balance){
+
+currentBalance=Number(balance)
 
 const wallet=el("walletBalance")
 
@@ -54,7 +73,7 @@ async function biometricAuth(){
 if(localStorage.getItem("biometric")!=="true") return true
 
 if(!window.PublicKeyCredential){
-showToast("Biometric not supported on this device")
+showToast("Biometric not supported")
 return true
 }
 
@@ -65,7 +84,7 @@ window.crypto.getRandomValues(challenge)
 
 await navigator.credentials.get({
 publicKey:{
-challenge:challenge,
+challenge,
 timeout:60000,
 userVerification:"preferred"
 }
@@ -73,10 +92,9 @@ userVerification:"preferred"
 
 return true
 
-}catch(e){
+}catch{
 
 showToast("Biometric verification failed")
-
 return false
 
 }
@@ -108,6 +126,12 @@ animateWallet(user.wallet_balance)
 
 welcomeSound.play()
 
+/* ADMIN PANEL */
+
+if(user.role==="admin" && el("admin")){
+el("admin").style.display="block"
+}
+
 fetchTransactions()
 
 loadPlans()
@@ -119,7 +143,6 @@ loadAdminProfit()
 }catch{
 
 showToast("Session expired")
-
 window.location="login.html"
 
 }
@@ -146,38 +169,9 @@ container.innerHTML=""
 
 tx.slice(0,5).forEach(t=>{
 
-const div=document.createElement("div")
-
-div.className="transactionCard"
-
-div.innerHTML=`
-<strong>${t.type}</strong> ₦${t.amount}<br>
-${t.phone||""}<br>
-${t.status}<br>
-<button onclick='showReceipt(${JSON.stringify(t)})'>Receipt</button>
-`
-
-container.appendChild(div)
-
-})
-
-}
-
-async function loadAllTransactions(){
-
-const res=await fetch(API+"/api/transactions",{
-headers:{Authorization:"Bearer "+getToken()}
-})
-
-const tx=await res.json()
-
-const container=el("allTransactions")
-
-if(!container)return
-
-container.innerHTML=""
-
-tx.forEach(t=>{
+const statusColor=
+t.status==="success"?"#2ecc71":
+t.status==="pending"?"#f1c40f":"#e74c3c"
 
 const div=document.createElement("div")
 
@@ -186,8 +180,7 @@ div.className="transactionCard"
 div.innerHTML=`
 <strong>${t.type}</strong> ₦${t.amount}<br>
 ${t.phone||""}<br>
-${t.status}<br>
-${new Date(t.created_at).toLocaleString()}<br>
+<span style="color:${statusColor}">${t.status}</span><br>
 <button onclick='showReceipt(${JSON.stringify(t)})'>Receipt</button>
 `
 
@@ -235,6 +228,44 @@ select.appendChild(opt)
 
 }
 
+/* ================= NETWORK DETECTION ================= */
+
+function detectNetwork(phone){
+
+const prefix=phone.substring(0,4)
+
+for(const net in networkPrefixes){
+
+if(networkPrefixes[net].includes(prefix)) return net
+
+}
+
+return null
+
+}
+
+function handlePhoneInput(inputId,networkSelectId,logoId){
+
+const phone=el(inputId).value
+
+if(phone.length<4) return
+
+const net=detectNetwork(phone)
+
+if(net){
+
+if(el(networkSelectId))
+el(networkSelectId).value=net
+
+if(el(logoId))
+el(logoId).src=networkLogos[net]
+
+updatePlans()
+
+}
+
+}
+
 /* ================= BUY DATA ================= */
 
 async function buyData(pin){
@@ -247,10 +278,18 @@ showToast("Fill all fields")
 return
 }
 
-/* BIOMETRIC CHECK */
+/* BALANCE CHECK */
+
+const plan=cachedPlans.find(p=>p.plan_id==planId)
+
+if(plan && currentBalance<plan.price){
+showToast("Insufficient wallet balance")
+return
+}
+
+/* BIOMETRIC */
 
 const bio=await biometricAuth()
-
 if(!bio) return
 
 try{
@@ -278,7 +317,7 @@ if(data.success){
 
 successSound.play()
 
-showToast("Purchase successful")
+showToast("Data purchase successful")
 
 fetchTransactions()
 
@@ -303,17 +342,25 @@ showToast("Network error")
 async function buyAirtime(pin){
 
 const phone=el("airtimePhone").value
-const amount=el("airtimeAmount").value
+const amount=Number(el("airtimeAmount").value)
+
+const network=detectNetwork(phone)
 
 if(!phone || !amount){
 showToast("Fill all fields")
 return
 }
 
-/* BIOMETRIC CHECK */
+/* BALANCE */
+
+if(currentBalance<amount){
+showToast("Insufficient wallet balance")
+return
+}
+
+/* BIOMETRIC */
 
 const bio=await biometricAuth()
-
 if(!bio) return
 
 try{
@@ -330,6 +377,7 @@ Authorization:"Bearer "+getToken()
 body:JSON.stringify({
 phone,
 amount,
+network,
 pin
 })
 
@@ -366,7 +414,7 @@ showToast("Network error")
 function showReceipt(t){
 
 const text=`
-📄 MAY CONNECT RECEIPT
+MAY CONNECT RECEIPT
 
 Type: ${t.type}
 Amount: ₦${t.amount}
@@ -374,8 +422,6 @@ Phone: ${t.phone||"-"}
 Status: ${t.status}
 Reference: ${t.reference||"-"}
 Date: ${new Date(t.created_at).toLocaleString()}
-
-Thank you for using MAY CONNECT
 `
 
 const share=encodeURIComponent(text)
@@ -388,7 +434,7 @@ top:"0",
 left:"0",
 width:"100%",
 height:"100%",
-background:"rgba(0,0,0,0.9)",
+background:"rgba(0,0,0,0.92)",
 display:"flex",
 alignItems:"center",
 justifyContent:"center",
@@ -397,17 +443,23 @@ zIndex:"9999"
 
 box.innerHTML=`
 
-<div style="background:#08142c;padding:20px;border-radius:12px;width:90%;max-width:400px">
+<div style="background:#08142c;padding:25px;border-radius:16px;width:90%;max-width:420px;text-align:center">
 
-<h3>Transaction Receipt</h3>
+<h2 style="margin-bottom:10px">Transaction Receipt</h2>
 
 <pre style="white-space:pre-wrap">${text}</pre>
 
-<button onclick="window.open('https://wa.me/?text=${share}')">Share on WhatsApp</button>
+<button onclick="window.open('https://wa.me/?text=${share}')">
+Share on WhatsApp
+</button>
 
-<button onclick="navigator.clipboard.writeText('${t.reference||""}')">Copy Reference</button>
+<button onclick="navigator.clipboard.writeText('${t.reference||""}')">
+Copy Reference
+</button>
 
-<button onclick="this.parentElement.parentElement.remove()">Close</button>
+<button onclick="this.parentElement.parentElement.remove()">
+Close
+</button>
 
 </div>
 `
@@ -464,7 +516,7 @@ fetchTransactions()
 
 }
 
-/* ================= ADMIN PROFIT ================= */
+/* ================= ADMIN PROFITS ================= */
 
 async function loadAdminProfit(){
 
@@ -478,80 +530,13 @@ headers:{Authorization:"Bearer "+getToken()}
 
 const data=await res.json()
 
-if(el("adminTotalProfit"))
 el("adminTotalProfit").innerText="₦"+data.total_profit
 
-}catch{
-
-console.log("Profit API not ready")
-
-}
+}catch{}
 
 }
 
 setInterval(loadAdminProfit,30000)
-
-/* ================= PASSWORD ================= */
-
-function changePassword(){
-
-const current=prompt("Current password")
-const newPass=prompt("New password")
-const confirm=prompt("Confirm new password")
-
-if(newPass!==confirm){
-showToast("Passwords do not match")
-return
-}
-
-fetch(API+"/api/change-password",{
-
-method:"POST",
-
-headers:{
-"Content-Type":"application/json",
-Authorization:"Bearer "+getToken()
-},
-
-body:JSON.stringify({
-currentPassword:current,
-newPassword:newPass
-})
-
-}).then(r=>r.json()).then(d=>showToast(d.message))
-
-}
-
-/* ================= PIN ================= */
-
-function changePin(){
-
-const current=prompt("Current PIN")
-const newPin=prompt("New PIN")
-const confirm=prompt("Confirm new PIN")
-
-if(newPin!==confirm){
-showToast("PIN mismatch")
-return
-}
-
-fetch(API+"/api/change-pin",{
-
-method:"POST",
-
-headers:{
-"Content-Type":"application/json",
-Authorization:"Bearer "+getToken()
-},
-
-body:JSON.stringify({
-currentPin:current,
-newPin:newPin
-})
-
-}).then(r=>r.json()).then(d=>showToast(d.message))
-
-}
 
 /* ================= START ================= */
 
@@ -561,6 +546,14 @@ loadDashboard()
 
 if(el("networkSelect")){
 el("networkSelect").addEventListener("change",updatePlans)
+}
+
+if(el("dataPhone")){
+el("dataPhone").addEventListener("input",()=>handlePhoneInput("dataPhone","networkSelect","networkLogo"))
+}
+
+if(el("airtimePhone")){
+el("airtimePhone").addEventListener("input",()=>handlePhoneInput("airtimePhone","airtimeNetwork","airtimeLogo"))
 }
 
 })
