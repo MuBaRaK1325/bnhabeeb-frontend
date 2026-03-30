@@ -119,6 +119,11 @@ margin-top:10px;
 cursor:pointer;
 }
 
+.loginBtn:disabled{
+opacity:0.6;
+cursor:not-allowed;
+}
+
 .biometric{
 margin-top:16px;
 border:2px dashed #3b78e7;
@@ -152,11 +157,8 @@ display:block;
 <!-- LOGIN LOADER -->
 
 <div id="loginLoader">
-
 <div class="loaderRing"></div>
-
 <p style="margin-top:15px">Logging in...</p>
-
 </div>
 
 <img src="images/logo.png" class="logo">
@@ -174,9 +176,7 @@ display:block;
 <button class="showBtn" onclick="togglePassword()">Show</button>
 </div>
 
-<button class="loginBtn" onclick="login()">Login</button>
-
-<!-- BIOMETRIC LOGIN -->
+<button id="loginBtn" class="loginBtn" onclick="login()">Login</button>
 
 <div class="biometric" onclick="biometricLogin()">
 🔐 Login with Fingerprint / Face ID
@@ -194,44 +194,36 @@ Create Account
 
 <script>
 
-/* AUTO LOGIN IF TOKEN EXISTS */
+/* AUTO LOGIN */
 
 window.onload=function(){
 
 const token=localStorage.getItem("token")
 
 if(token){
-
 window.location.href="dashboard.html"
-
 }
 
 }
 
-/* TOGGLE PASSWORD */
+/* PASSWORD TOGGLE */
 
 function togglePassword(){
 
 const pass=document.getElementById("loginPassword")
 
-if(pass.type==="password"){
-
-pass.type="text"
-
-}else{
-
-pass.type="password"
+pass.type = pass.type==="password" ? "text" : "password"
 
 }
 
-}
-
-/* LOGIN FUNCTION */
+/* LOGIN */
 
 async function login(){
 
 const username=document.getElementById("loginUsername").value.trim()
 const password=document.getElementById("loginPassword").value.trim()
+const loader=document.getElementById("loginLoader")
+const btn=document.getElementById("loginBtn")
 
 if(!username || !password){
 
@@ -240,40 +232,37 @@ return
 
 }
 
-document.getElementById("loginLoader").style.display="flex"
+btn.disabled=true
+loader.style.display="flex"
 
 try{
 
 const res=await fetch("https://mayconnect-backend-1.onrender.com/api/login",{
 
 method:"POST",
-
-headers:{
-"Content-Type":"application/json"
-},
-
-body:JSON.stringify({
-username,
-password
-})
+headers:{ "Content-Type":"application/json" },
+body:JSON.stringify({ username,password })
 
 })
 
-const data=await res.json()
+let data
+
+try{
+data=await res.json()
+}catch{
+throw new Error("Invalid server response")
+}
 
 if(data.token){
 
-/* SAVE TOKEN */
-
 localStorage.setItem("token",data.token)
-
-/* REDIRECT */
 
 window.location.href="dashboard.html"
 
 }else{
 
-document.getElementById("loginLoader").style.display="none"
+loader.style.display="none"
+btn.disabled=false
 
 alert(data.message || "Login failed")
 
@@ -281,9 +270,10 @@ alert(data.message || "Login failed")
 
 }catch(err){
 
-document.getElementById("loginLoader").style.display="none"
+loader.style.display="none"
+btn.disabled=false
 
-alert("Network error")
+alert("Network error or server offline")
 
 }
 
@@ -298,7 +288,7 @@ const token=localStorage.getItem("token")
 
 if(biometricEnabled!=="true"){
 
-alert("Biometric login not enabled. Enable it inside your profile first.")
+alert("Biometric login not enabled. Enable it in dashboard.")
 return
 
 }
@@ -310,27 +300,33 @@ return
 
 }
 
+if(!window.PublicKeyCredential){
+
+alert("Biometric not supported on this device")
+return
+
+}
+
 try{
 
-/* Trigger device biometric */
+const challenge=new Uint8Array(32)
+window.crypto.getRandomValues(challenge)
 
 await navigator.credentials.get({
 publicKey:{
-challenge:new Uint8Array(32),
+challenge,
 timeout:60000,
 userVerification:"preferred"
 }
 })
 
-/* success */
-
 document.getElementById("loginLoader").style.display="flex"
 
 setTimeout(()=>{
 window.location.href="dashboard.html"
-},800)
+},700)
 
-}catch(err){
+}catch{
 
 alert("Biometric verification failed")
 
