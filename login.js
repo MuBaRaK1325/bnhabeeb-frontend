@@ -1,85 +1,182 @@
 /* ==============================
-   MAY-CONNECT LOGIN SCRIPT
+   MAYCONNECT LOGIN SCRIPT
 ================================ */
-const backendUrl = "https://mayconnect-backend-1.onrender.com";
-const loginForm = document.getElementById("loginForm");
-const emailInput = document.getElementById("login-email");
-const passwordInput = document.getElementById("login-password");
-const welcomeSound = document.getElementById("welcomeSound");
-const splashLoader = document.getElementById("splashLoader");
 
-function getToken() {
-  return localStorage.getItem("token");
-}
+const API = "https://mayconnect-backend-1.onrender.com";
+
+/* INPUTS */
+
+const usernameInput = document.getElementById("loginUsername");
+const passwordInput = document.getElementById("loginPassword");
+const loginBtn = document.getElementById("loginBtn");
+const loader = document.getElementById("loginLoader");
+
+/* SOUND */
+
+const welcomeSound = new Audio("welcome.mp3");
+
+/* ================= AUTO LOGIN ================= */
 
 document.addEventListener("DOMContentLoaded", () => {
-  if (welcomeSound) welcomeSound.play().catch(() => {});
+
+const token = localStorage.getItem("token");
+
+if (token) {
+window.location.href = "dashboard.html";
+}
+
 });
 
-/* ================= SHOW / HIDE PASSWORD ================= */
-function togglePassword() {
-  const pw = passwordInput;
-  if (!pw) return;
-  pw.type = pw.type === "password" ? "text" : "password";
+/* ================= PASSWORD TOGGLE ================= */
+
+function togglePassword(){
+
+if(!passwordInput) return;
+
+passwordInput.type =
+passwordInput.type === "password" ? "text" : "password";
+
 }
 
-/* ================= BIOMETRIC PLACEHOLDER ================= */
-function biometricLogin() {
-  alert("Biometric login coming soon");
+/* ================= LOGIN ================= */
+
+if(loginBtn){
+
+loginBtn.addEventListener("click",login);
+
 }
 
-/* ================= LOGIN SUBMIT ================= */
-if (loginForm) {
-  loginForm.addEventListener("submit", async (e) => {
-    e.preventDefault();
+async function login(){
 
-    if (!emailInput || !passwordInput) {
-      alert("Login form misconfigured");
-      return;
-    }
+const username = usernameInput.value.trim();
+const password = passwordInput.value.trim();
 
-    const email = emailInput.value.trim();
-    const password = passwordInput.value.trim();
+if(!username || !password){
 
-    if (!email || !password) {
-      alert("All fields are required");
-      return;
-    }
+alert("Enter username and password");
+return;
 
-    // Show loader
-    splashLoader.classList.remove("hidden");
+}
 
-    try {
-      const res = await fetch(`${backendUrl}/api/login`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password })
-      });
+loginBtn.disabled = true;
+loader.style.display = "flex";
 
-      const data = await res.json();
+try{
 
-      if (!res.ok) {
-        alert(data.error || "Invalid email or password");
-        return;
-      }
+const res = await fetch(API + "/api/login",{
 
-      // Save token & name
-      localStorage.setItem("token", data.token);
-      localStorage.setItem("name", data.name || "User");
+method:"POST",
 
-      // ✅ Admin notification
-      if (email.toLowerCase() === "abubakarmubarak3456@gmail.com") {
-        alert("Welcome Admin!");
-      }
+headers:{
+"Content-Type":"application/json"
+},
 
-      // Redirect to dashboard
-      location.href = "dashboard.html";
+body:JSON.stringify({
+username,
+password
+})
 
-    } catch (err) {
-      console.error(err);
-      alert("Network error. Check your connection or backend.");
-    } finally {
-      splashLoader.classList.add("hidden");
-    }
-  });
+});
+
+const data = await res.json();
+
+if(!res.ok){
+
+throw new Error(data.message || "Login failed");
+
+}
+
+/* SAVE TOKEN */
+
+localStorage.setItem("token",data.token);
+localStorage.setItem("username",data.username);
+
+/* ADMIN DETECTION */
+
+if(data.is_admin){
+
+alert("Welcome Admin");
+
+}
+
+/* PLAY LOGIN SOUND */
+
+welcomeSound.play().catch(()=>{});
+
+/* REDIRECT */
+
+setTimeout(()=>{
+
+window.location.href="dashboard.html";
+
+},600);
+
+}catch(err){
+
+alert(err.message || "Server connection failed");
+
+loginBtn.disabled=false;
+loader.style.display="none";
+
+}
+
+}
+
+/* ================= BIOMETRIC LOGIN ================= */
+
+async function biometricLogin(){
+
+const biometricEnabled = localStorage.getItem("biometric");
+const token = localStorage.getItem("token");
+
+if(biometricEnabled!=="true"){
+
+alert("Enable biometric inside dashboard first");
+return;
+
+}
+
+if(!token){
+
+alert("Login normally first before using biometric");
+return;
+
+}
+
+if(!window.PublicKeyCredential){
+
+alert("Biometric not supported on this device");
+return;
+
+}
+
+try{
+
+const challenge = new Uint8Array(32);
+crypto.getRandomValues(challenge);
+
+await navigator.credentials.get({
+
+publicKey:{
+challenge,
+timeout:60000,
+userVerification:"preferred"
+}
+
+});
+
+loader.style.display="flex";
+
+setTimeout(()=>{
+
+window.location.href="dashboard.html";
+
+},500);
+
+}catch{
+
+alert("Biometric verification failed");
+
+}
+
 }

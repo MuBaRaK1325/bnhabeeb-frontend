@@ -13,8 +13,10 @@ background:#000;
 color:white;
 font-family:Arial;
 display:none;
-padding-bottom:90px;
+padding-bottom:120px;
 }
+
+/* HEADER */
 
 header{
 display:flex;
@@ -23,9 +25,16 @@ align-items:center;
 padding:15px;
 }
 
+/* LOGO */
+
 .logo img{
 width:80px;
+border-radius:50%;
+border:3px solid #3b78e7;
+padding:4px;
 }
+
+/* WALLET */
 
 .walletCard{
 margin:20px;
@@ -39,6 +48,8 @@ background:linear-gradient(135deg,#3b78e7,#274ea3);
 font-size:30px;
 }
 
+/* SECTIONS */
+
 .section{
 display:none;
 padding:20px;
@@ -47,6 +58,8 @@ padding:20px;
 .section.active{
 display:block;
 }
+
+/* FORM */
 
 input,select{
 width:100%;
@@ -64,7 +77,10 @@ border-radius:10px;
 color:white;
 margin-top:10px;
 width:100%;
+cursor:pointer;
 }
+
+/* TRANSACTIONS */
 
 .transactionCard{
 background:#08142c;
@@ -72,6 +88,8 @@ padding:12px;
 border-radius:10px;
 margin-top:10px;
 }
+
+/* NAV */
 
 .bottomNav{
 position:fixed;
@@ -90,6 +108,8 @@ color:white;
 font-size:14px;
 }
 
+/* PIN MODAL */
+
 .pinModal{
 position:fixed;
 top:0;
@@ -107,8 +127,11 @@ z-index:5000;
 background:#0c1a36;
 padding:20px;
 border-radius:10px;
-width:80%;
+width:85%;
+max-width:400px;
 }
+
+/* ADMIN */
 
 .adminCard{
 background:#08142c;
@@ -117,9 +140,34 @@ border-radius:10px;
 margin-top:10px;
 }
 
+/* NETWORK LOGO */
+
 .logoSmall{
-width:35px;
-margin-top:5px;
+width:40px;
+margin-top:10px;
+}
+
+/* CHAT BUTTON */
+
+.chatBtn{
+position:fixed;
+right:15px;
+bottom:90px;
+background:#25D366;
+padding:14px 18px;
+border-radius:30px;
+color:white;
+font-weight:bold;
+cursor:pointer;
+}
+
+/* FOOTER */
+
+footer{
+text-align:center;
+margin-top:40px;
+font-size:13px;
+opacity:0.8;
 }
 
 </style>
@@ -133,7 +181,7 @@ margin-top:5px;
 <img src="images/logo.png">
 </div>
 
-<div onclick="showSection('profile')">👤</div>
+<div onclick="showSection('profile')" style="cursor:pointer">👤</div>
 
 </header>
 
@@ -183,7 +231,7 @@ margin-top:5px;
 
 <section id="airtime" class="section">
 
-<h2>Airtime</h2>
+<h2>Buy Airtime</h2>
 
 <select id="airtimeNetwork">
 <option>MTN</option>
@@ -207,11 +255,11 @@ margin-top:5px;
 
 <h2>Fund Wallet</h2>
 
-<p>Virtual account will appear here once payment gateway is enabled.</p>
+<p>Virtual account will appear here when enabled.</p>
 
 <div class="adminCard">
 
-<p><b>Supported Gateway</b></p>
+<b>Supported Gateway</b>
 
 <p>Paystack (Coming Soon)</p>
 
@@ -237,9 +285,9 @@ margin-top:5px;
 
 <button onclick="changePassword()">Change Password</button>
 
-<button onclick="changePin()">Change PIN</button>
+<button onclick="changePin()">Change Transaction PIN</button>
 
-<button onclick="toggleBiometric()">Toggle Biometrics</button>
+<button onclick="toggleBiometric()">Enable / Disable Biometric</button>
 
 <button onclick="logout()">Logout</button>
 
@@ -259,69 +307,21 @@ margin-top:5px;
 
 </div>
 
-<div class="adminCard">
-
-<input id="searchUser" placeholder="Search user by username">
-
-<button onclick="searchUser()">Search</button>
-
-<div id="adminUsers"></div>
-
-</div>
-
-<div class="adminCard">
-
-<h3>Wallet Actions</h3>
-
-<input id="adminUserId" placeholder="User ID">
-
-<input id="creditAmount" placeholder="Credit Amount">
-
-<button onclick="creditUser()">Credit Wallet</button>
-
-<input id="debitAmount" placeholder="Debit Amount">
-
-<button onclick="debitUser()">Debit Wallet</button>
-
-</div>
-
-<div class="adminCard">
-
-<h3>Approve Deposit</h3>
-
-<input id="depositId" placeholder="Deposit ID">
-
-<button onclick="approveDeposit()">Approve Deposit</button>
-
-</div>
-
-<div class="adminCard">
-
-<h3>Withdraw Profit</h3>
-
-<input id="withdrawAmount" placeholder="Amount">
-
-<input id="withdrawBank" placeholder="Bank Name">
-
-<input id="withdrawAccount" placeholder="Account Number">
-
-<button onclick="withdrawProfit()">Withdraw</button>
-
-</div>
-
 </section>
 
-<!-- PIN MODAL -->
+<!-- PIN / BIOMETRIC MODAL -->
 
 <div id="pinModal" class="pinModal">
 
 <div class="pinBox">
 
-<h3>Enter Transaction PIN</h3>
+<h3>Confirm Purchase</h3>
 
-<input id="pinInput" type="password">
+<input id="pinInput" type="password" placeholder="Enter Transaction PIN">
 
-<button onclick="confirmPurchase()">Confirm</button>
+<button onclick="confirmPurchase()">Confirm With PIN</button>
+
+<button onclick="confirmBiometric()">Confirm With Biometrics</button>
 
 <button onclick="closePinModal()">Cancel</button>
 
@@ -329,7 +329,23 @@ margin-top:5px;
 
 </div>
 
-<!-- NAVIGATION -->
+<!-- CHAT SUPPORT -->
+
+<div class="chatBtn" onclick="openChat()">
+Chat Support
+</div>
+
+<!-- FOOTER -->
+
+<footer>
+
+© MAYCONNECT TECHNOLOGIES NIG LTD  
+<br>
+Developed by MayConnect
+
+</footer>
+
+<!-- NAV -->
 
 <div class="bottomNav">
 
@@ -351,6 +367,8 @@ margin-top:5px;
 
 let purchaseType=""
 
+/* SECTION NAVIGATION */
+
 function showSection(id){
 
 document.querySelectorAll(".section").forEach(s=>{
@@ -359,16 +377,13 @@ s.classList.remove("active")
 
 document.getElementById(id).classList.add("active")
 
-if(id==="transactions"){
-loadAllTransactions()
 }
 
-}
+/* PIN MODAL */
 
 function openPinModal(type){
 
 purchaseType=type
-
 document.getElementById("pinModal").style.display="flex"
 
 }
@@ -376,10 +391,11 @@ document.getElementById("pinModal").style.display="flex"
 function closePinModal(){
 
 document.getElementById("pinModal").style.display="none"
-
 document.getElementById("pinInput").value=""
 
 }
+
+/* PIN CONFIRM */
 
 function confirmPurchase(){
 
@@ -399,6 +415,54 @@ buyAirtime(pin)
 }
 
 closePinModal()
+
+}
+
+/* BIOMETRIC CONFIRM */
+
+async function confirmBiometric(){
+
+if(!window.PublicKeyCredential){
+alert("Biometric not supported")
+return
+}
+
+try{
+
+const challenge=new Uint8Array(32)
+crypto.getRandomValues(challenge)
+
+await navigator.credentials.get({
+publicKey:{
+challenge,
+timeout:60000,
+userVerification:"preferred"
+}
+})
+
+if(purchaseType==="data"){
+buyData("biometric")
+}
+
+if(purchaseType==="airtime"){
+buyAirtime("biometric")
+}
+
+closePinModal()
+
+}catch{
+
+alert("Biometric verification failed")
+
+}
+
+}
+
+/* CHAT SUPPORT */
+
+function openChat(){
+
+window.open("https://wa.me/2348117988561","_blank")
 
 }
 

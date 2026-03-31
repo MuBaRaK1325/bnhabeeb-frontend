@@ -1,7 +1,13 @@
-<!DOCTYPE html><html lang="en"><head>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>MAY CONNECT - Login</title><style>
+
+<title>MAY CONNECT - Login</title>
+
+<style>
 
 *{
 margin:0;
@@ -144,29 +150,58 @@ text-decoration:none;
 display:block;
 }
 
-</style></head><body><!-- LOGIN LOADER --><div id="loginLoader">
+</style>
+</head>
+
+<body>
+
+<!-- LOGIN LOADER -->
+
+<div id="loginLoader">
 <div class="loaderRing"></div>
 <p style="margin-top:15px">Logging in...</p>
-</div><img src="images/logo.png" class="logo"><div class="card"><div class="title">Welcome Back</div><div class="inputBox">
+</div>
+
+<img src="images/logo.png" class="logo">
+
+<div class="card">
+
+<div class="title">Welcome Back</div>
+
+<div class="inputBox">
 <input id="loginUsername" placeholder="Username">
-</div><div class="inputBox">
+</div>
+
+<div class="inputBox">
 <input id="loginPassword" type="password" placeholder="Password">
 <button class="showBtn" onclick="togglePassword()">Show</button>
-</div><button id="loginBtn" class="loginBtn">Login</button>
+</div>
+
+<button id="loginBtn" class="loginBtn">Login</button>
 
 <div class="biometric" onclick="biometricLogin()">
 🔐 Login with Fingerprint / Face ID
-</div><a href="signup.html">
+</div>
+
+<a href="signup.html">
 <div class="signup">
 Create Account
 </div>
-</a></div><script>
+</a>
+
+</div>
+
+<script>
 
 /* API */
 
 const API="https://mayconnect-backend-1.onrender.com"
 
-/* AUTO LOGIN */
+/* SUCCESS SOUND */
+
+const welcomeSound=new Audio("welcome.mp3")
+
+/* AUTO LOGIN CHECK */
 
 window.addEventListener("load",()=>{
 
@@ -215,30 +250,34 @@ loader.style.display="flex"
 try{
 
 const res=await fetch(API+"/api/login",{
-
 method:"POST",
 headers:{
 "Content-Type":"application/json"
 },
 body:JSON.stringify({username,password})
-
 })
 
-if(!res.ok){
-throw new Error("Server error")
-}
-
 const data=await res.json()
+
+if(!res.ok){
+
+throw new Error(data.message || "Login failed")
+
+}
 
 if(data.token){
 
 localStorage.setItem("token",data.token)
 
+welcomeSound.play()
+
+setTimeout(()=>{
 window.location.href="dashboard.html"
+},700)
 
 }else{
 
-throw new Error(data.message || "Login failed")
+throw new Error("Invalid server response")
 
 }
 
@@ -308,5 +347,7 @@ alert("Biometric verification failed")
 
 }
 
-</script></body>
+</script>
+
+</body>
 </html>
