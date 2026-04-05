@@ -39,57 +39,57 @@ document.body.appendChild(t)
 setTimeout(()=>t.remove(),3000)
 }
 
-/* ================= LOADER ================= */
-
-function showLoader(){
-document.body.style.display="none"
-}
-
-function hideLoader(){
-document.body.style.display="block"
-}
-
 /* ================= AUTH CHECK ================= */
 
 if(!getToken()){
-location.href="index.html"
+window.location.href="index.html"
 }
 
 /* ================= DASHBOARD ================= */
 
 async function loadDashboard(){
 
-showLoader()
-
 const token=getToken()
+
+if(!token){
+logout()
+return
+}
 
 try{
 
-const payload = JSON.parse(atob(token.split(".")[1]))
+/* SAFE TOKEN DECODE */
+let payload=null
+try{
+payload = JSON.parse(atob(token.split(".")[1]))
+}catch{
+throw new Error("Invalid token")
+}
+
 currentUser = payload
 
+/* UI LOAD FIRST (prevents stuck screen) */
+document.body.style.display="block"
+
+if(el("usernameDisplay")){
 el("usernameDisplay").innerText="Hello "+payload.username
+}
 
-animateWallet(0)
-
-/* ADMIN PANEL */
+/* ADMIN */
 if(payload.is_admin && el("admin")){
 el("admin").style.display="block"
 }
 
-/* ✅ PLAY SOUND ONCE */
+/* PLAY SOUND ONLY ONCE */
 if(!hasPlayedWelcome){
 welcomeSound.play().catch(()=>{})
 hasPlayedWelcome=true
 }
 
-/* LOAD DATA */
-await Promise.all([
-fetchTransactions(),
-loadPlans(),
+/* LOAD DATA (safe) */
+fetchTransactions()
+loadPlans()
 loadAdminProfit()
-])
-
 connectWebSocket()
 
 }catch(err){
@@ -101,7 +101,6 @@ return
 
 }
 
-hideLoader()
 }
 
 /* ================= WALLET ================= */
@@ -128,9 +127,9 @@ if(!res.ok) return
 
 const tx=await res.json()
 
-/* UPDATE WALLET */
-if(tx.length){
-animateWallet(tx[0].wallet_balance || currentBalance)
+/* SAFE WALLET UPDATE */
+if(tx.length && tx[0].wallet_balance !== undefined){
+animateWallet(tx[0].wallet_balance)
 }
 
 /* HOME */
@@ -167,8 +166,8 @@ all.appendChild(div)
 })
 }
 
-}catch{
-console.log("Transactions error")
+}catch(err){
+console.log("Transactions error", err)
 }
 
 }
@@ -183,16 +182,16 @@ const res=await fetch(API+"/api/plans",{
 headers:{Authorization:"Bearer "+getToken()}
 })
 
-if(!res.ok) throw new Error()
+if(!res.ok) return
 
 const plans=await res.json()
 
-cachedPlans=plans.filter(p=>p.company===currentUser.company)
+cachedPlans = plans.filter(p=>p.company===currentUser.company)
 
 updatePlans()
 
-}catch{
-showToast("Failed to load plans")
+}catch(err){
+console.log("Plans error", err)
 }
 
 }
@@ -281,24 +280,46 @@ fetchTransactions()
 showToast(data.message||"Failed")
 }
 
-}catch{
+}catch(err){
+console.log(err)
 showToast("Network error")
 }
 
 }
 
-/* ================= ADMIN ACTIONS ================= */
+/* ================= ADMIN ================= */
+
+async function loadAdminProfit(){
+
+if(!el("adminTotalProfit")) return
+
+try{
+
+const res=await fetch(API+"/api/admin/profits",{
+headers:{Authorization:"Bearer "+getToken()}
+})
+
+if(!res.ok) return
+
+const data=await res.json()
+el("adminTotalProfit").innerText="₦"+(data.total_profit||0)
+
+}catch(err){
+console.log(err)
+}
+
+}
 
 function changePassword(){
 const newPass=prompt("Enter new password")
 if(!newPass) return
-showToast("Password change coming soon")
+showToast("Feature coming soon")
 }
 
 function changePin(){
-const newPin=prompt("Enter new 4-digit PIN")
+const newPin=prompt("Enter new PIN")
 if(!newPin) return
-showToast("PIN change coming soon")
+showToast("Feature coming soon")
 }
 
 function toggleBiometric(){
@@ -310,10 +331,6 @@ showToast("Biometric "+(!current?"Enabled":"Disabled"))
 /* ================= WEBSOCKET ================= */
 
 function connectWebSocket(){
-
-if(ws){
-ws.close()
-}
 
 try{
 
@@ -334,7 +351,9 @@ ws.onclose=()=>{
 setTimeout(connectWebSocket,5000)
 }
 
-}catch{}
+}catch(err){
+console.log("WS error", err)
+}
 
 }
 
@@ -348,9 +367,7 @@ if(ws) ws.close()
 
 localStorage.clear()
 
-/* FORCE REDIRECT */
 window.location.href="index.html"
-setTimeout(()=>window.location.reload(),100)
 
 }
 
