@@ -5,6 +5,9 @@
 <title>MAY Connect</title>
 <meta name="viewport" content="width=device-width,initial-scale=1">
 
+<!-- ✅ PWA -->
+<link rel="manifest" href="manifest.json">
+
 <style>
 body{
 margin:0;
@@ -90,6 +93,14 @@ padding:20px;
 border-radius:10px;
 width:85%;
 }
+
+/* 🔥 ADMIN UI */
+.userCard{
+background:#08142c;
+padding:12px;
+border-radius:10px;
+margin-top:10px;
+}
 </style>
 </head>
 
@@ -100,6 +111,7 @@ width:85%;
 <div onclick="showSection('profile')">👤</div>
 </header>
 
+<!-- ================= HOME ================= -->
 <section id="home" class="section active">
 <h3 id="usernameDisplay"></h3>
 
@@ -111,6 +123,7 @@ width:85%;
 <div id="transactionHistory"></div>
 </section>
 
+<!-- ================= DATA ================= -->
 <section id="data" class="section">
 <select id="networkSelect"></select>
 <img id="networkLogo" class="logoSmall">
@@ -122,6 +135,7 @@ width:85%;
 <button onclick="confirmBiometric()">Use Fingerprint</button>
 </section>
 
+<!-- ================= AIRTIME ================= -->
 <section id="airtime" class="section">
 <input id="airtimePhone" placeholder="Phone">
 <input id="airtimeAmount" placeholder="Amount">
@@ -130,10 +144,12 @@ width:85%;
 <button onclick="confirmBiometric()">Use Fingerprint</button>
 </section>
 
+<!-- ================= TRANSACTIONS ================= -->
 <section id="transactions" class="section">
 <div id="allTransactions"></div>
 </section>
 
+<!-- ================= PROFILE ================= -->
 <section id="profile" class="section">
 <button onclick="changePassword()">Change Password</button>
 <button onclick="changePin()">Change PIN</button>
@@ -141,11 +157,25 @@ width:85%;
 <button onclick="logout()">Logout</button>
 </section>
 
+<!-- ================= ADMIN PANEL ================= -->
 <section id="admin" class="section" style="display:none">
-<h3>Total Profit</h3>
-<p id="adminTotalProfit">₦0</p>
+
+<h3>Admin Panel</h3>
+
+<p>Total Profit</p>
+<strong id="adminTotalProfit">₦0</strong>
+
+<hr>
+
+<h4>Search Users</h4>
+<input id="searchUserInput" placeholder="Enter username or email">
+<button onclick="searchUsers()">Search</button>
+
+<div id="userResults"></div>
+
 </section>
 
+<!-- ================= PIN MODAL ================= -->
 <div id="pinModal" class="pinModal">
 <div class="pinBox">
 <input id="pinInput" placeholder="PIN">
@@ -154,22 +184,34 @@ width:85%;
 </div>
 </div>
 
+<!-- ================= NAV ================= -->
 <div class="bottomNav">
 <button onclick="showSection('home')">Home</button>
 <button onclick="showSection('data')">Data</button>
 <button onclick="showSection('airtime')">Airtime</button>
 <button onclick="showSection('transactions')">History</button>
+<button onclick="showSection('admin')">Admin</button>
 </div>
 
 <script src="app.js"></script>
 
 <script>
+
+/* ================= PWA ================= */
+if("serviceWorker" in navigator){
+navigator.serviceWorker.register("service-worker.js")
+}
+
+/* ================= NAV ================= */
+
 let purchaseType=""
 
 function showSection(id){
 document.querySelectorAll(".section").forEach(s=>s.classList.remove("active"))
 document.getElementById(id).classList.add("active")
 }
+
+/* ================= PIN ================= */
 
 function openPinModal(type){
 purchaseType=type
@@ -190,6 +232,58 @@ if(purchaseType==="airtime") buyAirtime(pin)
 
 closePinModal()
 }
+
+/* ================= 🔥 ADMIN SEARCH ================= */
+
+async function searchUsers(){
+
+const query = document.getElementById("searchUserInput").value
+
+if(!query) return alert("Enter search")
+
+const res = await fetch(API+"/api/admin/search-users?q="+query,{
+headers:{Authorization:"Bearer "+localStorage.getItem("token")}
+})
+
+const users = await res.json()
+
+const container = document.getElementById("userResults")
+container.innerHTML=""
+
+users.forEach(u=>{
+const div=document.createElement("div")
+div.className="userCard"
+
+div.innerHTML=`
+<strong>${u.username}</strong><br>
+${u.email}<br>
+Balance: ₦${u.wallet_balance}<br>
+
+<input placeholder="Amount" id="amt-${u.id}">
+<button onclick="creditUser(${u.id})">Credit</button>
+`
+
+container.appendChild(div)
+})
+
+}
+
+async function creditUser(userId){
+
+const amount = document.getElementById("amt-"+userId).value
+
+await fetch(API+"/api/admin/credit",{
+method:"POST",
+headers:{
+"Content-Type":"application/json",
+Authorization:"Bearer "+localStorage.getItem("token")
+},
+body:JSON.stringify({user_id:userId,amount})
+})
+
+alert("User credited")
+}
+
 </script>
 
 </body>
