@@ -15,15 +15,12 @@ display:none;
 padding-bottom:120px;
 }
 
-/* HEADER */
 header{
 display:flex;
 justify-content:space-between;
-align-items:center;
 padding:15px;
 }
 
-/* LOGO */
 .logo img{
 width:80px;
 border-radius:50%;
@@ -31,7 +28,6 @@ border:3px solid #3b78e7;
 padding:4px;
 }
 
-/* WALLET */
 .walletCard{
 margin:20px;
 padding:20px;
@@ -40,15 +36,9 @@ text-align:center;
 background:linear-gradient(135deg,#3b78e7,#274ea3);
 }
 
-.walletCard strong{
-font-size:30px;
-}
-
-/* SECTION */
 .section{display:none;padding:20px;}
 .section.active{display:block;}
 
-/* FORM */
 input,select{
 width:100%;
 padding:12px;
@@ -57,7 +47,6 @@ border-radius:8px;
 border:none;
 }
 
-/* BUTTON */
 button{
 background:#3b78e7;
 border:none;
@@ -66,10 +55,8 @@ border-radius:10px;
 color:white;
 margin-top:10px;
 width:100%;
-cursor:pointer;
 }
 
-/* TX */
 .transactionCard{
 background:#08142c;
 padding:12px;
@@ -77,15 +64,6 @@ border-radius:10px;
 margin-top:10px;
 }
 
-/* ADMIN */
-.adminCard{
-background:#08142c;
-padding:15px;
-border-radius:10px;
-margin-top:10px;
-}
-
-/* NAV */
 .bottomNav{
 position:fixed;
 bottom:0;
@@ -93,68 +71,35 @@ width:100%;
 background:#050b18;
 display:flex;
 justify-content:space-around;
-padding:10px 0;
 }
 
-/* LOGO SMALL */
 .logoSmall{width:40px;margin-top:10px;}
 
-/* MODALS */
-.pinModal,#receiptModal{
+.pinModal{
 position:fixed;
 top:0;left:0;width:100%;height:100%;
 background:rgba(0,0,0,0.9);
 display:none;
 align-items:center;
 justify-content:center;
-z-index:9999;
 }
 
-.pinBox,.receiptBox{
+.pinBox{
 background:#0c1a36;
 padding:20px;
 border-radius:10px;
 width:85%;
-max-width:400px;
 }
-
-/* LOADER */
-#loader{
-position:fixed;
-top:0;left:0;width:100%;height:100%;
-background:#000;
-display:none;
-align-items:center;
-justify-content:center;
-z-index:9999;
-}
-
-.spinner{
-width:50px;height:50px;
-border:5px solid #222;
-border-top:5px solid #3b78e7;
-border-radius:50%;
-animation:spin 1s linear infinite;
-}
-
-@keyframes spin{
-0%{transform:rotate(0);}
-100%{transform:rotate(360deg);}
-}
-
 </style>
 </head>
 
 <body>
-
-<div id="loader"><div class="spinner"></div></div>
 
 <header>
 <div class="logo"><img src="images/logo.png"></div>
 <div onclick="showSection('profile')">👤</div>
 </header>
 
-<!-- HOME -->
 <section id="home" class="section active">
 <h3 id="usernameDisplay"></h3>
 
@@ -163,14 +108,10 @@ animation:spin 1s linear infinite;
 <strong id="walletBalance">₦0</strong>
 </div>
 
-<h3>Recent Transactions</h3>
 <div id="transactionHistory"></div>
 </section>
 
-<!-- DATA -->
 <section id="data" class="section">
-<h2>Buy Data</h2>
-
 <select id="networkSelect"></select>
 <img id="networkLogo" class="logoSmall">
 
@@ -178,54 +119,33 @@ animation:spin 1s linear infinite;
 <select id="planSelect"></select>
 
 <button onclick="openPinModal('data')">Buy Data</button>
+<button onclick="confirmBiometric()">Use Fingerprint</button>
 </section>
 
-<!-- AIRTIME -->
 <section id="airtime" class="section">
-<h2>Buy Airtime</h2>
-
-<select id="airtimeNetwork">
-<option>MTN</option>
-<option>Airtel</option>
-<option>Glo</option>
-</select>
-
 <input id="airtimePhone" placeholder="Phone">
 <input id="airtimeAmount" placeholder="Amount">
 
 <button onclick="openPinModal('airtime')">Buy Airtime</button>
+<button onclick="confirmBiometric()">Use Fingerprint</button>
 </section>
 
-<!-- TRANSACTIONS -->
 <section id="transactions" class="section">
-<h2>Transactions</h2>
 <div id="allTransactions"></div>
 </section>
 
-<!-- PROFILE -->
 <section id="profile" class="section">
-<h2>Account</h2>
-
 <button onclick="changePassword()">Change Password</button>
 <button onclick="changePin()">Change PIN</button>
 <button onclick="toggleBiometric()">Toggle Biometric</button>
 <button onclick="logout()">Logout</button>
-
 </section>
 
-<!-- ADMIN -->
-<section id="admin" class="section">
-<h2>Admin Panel</h2>
-
-<div class="adminCard">
+<section id="admin" class="section" style="display:none">
 <h3>Total Profit</h3>
 <p id="adminTotalProfit">₦0</p>
-</div>
-
-<button onclick="showSection('home')">Back</button>
 </section>
 
-<!-- PIN -->
 <div id="pinModal" class="pinModal">
 <div class="pinBox">
 <input id="pinInput" placeholder="PIN">
@@ -234,20 +154,11 @@ animation:spin 1s linear infinite;
 </div>
 </div>
 
-<!-- RECEIPT -->
-<div id="receiptModal">
-<div class="receiptBox">
-<div id="receiptContent"></div>
-<button onclick="closeReceipt()">Close</button>
-</div>
-</div>
-
 <div class="bottomNav">
 <button onclick="showSection('home')">Home</button>
 <button onclick="showSection('data')">Data</button>
 <button onclick="showSection('airtime')">Airtime</button>
 <button onclick="showSection('transactions')">History</button>
-<button onclick="showSection('admin')">Admin</button>
 </div>
 
 <script src="app.js"></script>
@@ -278,11 +189,6 @@ if(purchaseType==="data") buyData(pin)
 if(purchaseType==="airtime") buyAirtime(pin)
 
 closePinModal()
-}
-
-/* 🔥 FIXED BIOMETRIC */
-async function confirmBiometric(){
-alert("Use PIN instead (biometric requires backend setup)")
 }
 </script>
 
