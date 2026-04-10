@@ -52,7 +52,7 @@ localStorage.setItem("token", data.token);
 alert("Account created successfully ✅");
 
 /* ✅ GO TO DASHBOARD */
-window.location.href = "index.html";
+window.location.href = "dashboard.html";
 
 }catch(err){
 
