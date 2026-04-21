@@ -309,7 +309,7 @@ margin-top:8px;
 <header>
 <div class="logoContainer">
   <img src="images/BNHABEEB.png" alt="Company Logo" id="companyLogo">
-  <span class="companyBadge" id="companyBadge">LOADING</span>
+  <span class="companyBadge" id="companyBadge">BNHABEEB</span>
 </div>
 <div onclick="showSection('profile')">👤</div>
 </header>
@@ -331,7 +331,6 @@ margin-top:8px;
 
 <div class="quickActions">
 <div class="quickCard" onclick="showSection('data')">📶 Buy Data</div>
-<div class="quickCard airtimeOnly" onclick="showSection('airtime')">📞 Buy Airtime</div>
 <div class="quickCard" onclick="showSection('fund')">💰 Fund Wallet</div>
 <div class="quickCard adminOnly" onclick="showSection('profitDashboard')">📊 Profit</div>
 </div>
@@ -362,9 +361,9 @@ margin-top:8px;
 <h3>Select Network</h3>
 
 <div class="networkGrid">
-<div class="networkItem" onclick="selectNetwork('mtn', this)"><img src="images/mtn.png" alt="MTN"></div>
-<div class="networkItem" onclick="selectNetwork('glo', this)"><img src="images/glo.png" alt="GLO"></div>
-<div class="networkItem" onclick="selectNetwork('airtel', this)"><img src="images/airtel.png" alt="AIRTEL"></div>
+<div class="networkItem" onclick="selectNetwork('MTN', this)"><img src="images/mtn.png" alt="MTN"></div>
+<div class="networkItem" onclick="selectNetwork('GLO', this)"><img src="images/glo.png" alt="GLO"></div>
+<div class="networkItem" onclick="selectNetwork('AIRTEL', this)"><img src="images/airtel.png" alt="AIRTEL"></div>
 </div>
 
 <input id="dataPhone" type="tel" placeholder="Phone Number">
@@ -558,6 +557,445 @@ margin-top:8px;
 <button onclick="showSection('profile')">Profile</button>
 </div>
 
-<script src="app.js"></script>
+<script>
+const API = "https://mayconnect-backend-1.onrender.com";
+const token = localStorage.getItem("token");
+if (!token) window.location.href = "login.html";
+
+let user = null;
+let selectedNetwork = "";
+let selectedPlan = null;
+let currentAction = null;
+let allPlans = [];
+let editingPlanId = null;
+
+const headers = { "Authorization": "Bearer " + token, "Content-Type": "application/json" };
+
+/* ============ INIT ============ */
+window.onload = async () => {
+  await loadUser();
+  loadTransactions();
+  loadPlans();
+};
+
+async function loadUser() {
+  const res = await fetch(API + "/api/me", { headers });
+  if (!res.ok) return logout();
+  user = await res.json();
+  
+  document.getElementById("usernameDisplay").innerText = "Hi, " + user.username;
+  document.getElementById("walletBalance").innerText = "₦" + Number(user.wallet_balance).toLocaleString();
+  document.getElementById("companyBadge").innerText = user.company.toUpperCase();
+  
+  if (user.account_number) {
+    document.getElementById("accountNumber").innerText = user.account_number;
+    document.getElementById("accountName").innerText = user.account_name;
+    document.getElementById("bankName").innerText = user.bank_name;
+    document.getElementById("generateAccountBtn").style.display = "none";
+  } else {
+    document.getElementById("accountNumber").innerText = "No account yet";
+    document.getElementById("generateAccountBtn").style.display = "block";
+  }
+  
+  if (user.is_admin) {
+    document.querySelectorAll(".adminOnly").forEach(e => e.style.display = "block");
+    document.getElementById("adminWalletBalance").innerText = "₦" + Number(user.admin_wallet || 0).toLocaleString();
+    document.getElementById("adminWalletBalance2").innerText = "₦" + Number(user.admin_wallet || 0).toLocaleString();
+  }
+}
+
+/* ============ NAV ============ */
+function showSection(id) {
+  document.querySelectorAll(".section").forEach(s => s.classList.remove("active"));
+  document.getElementById(id).classList.add("active");
+  if (id === "transactions") loadAllTransactions();
+  if (id === "profitDashboard" && user?.is_admin) loadProfitDashboard();
+  if (id === "topUsersManager" && user?.is_admin) loadTopUsers();
+  if (id === "plansManager" && user?.is_admin) loadAdminPlans();
+  if (id === "usersManager" && user?.is_admin) loadAdminUsers();
+  if (id === "withdrawals" && user?.is_admin) loadWithdrawals();
+}
+
+/* ============ FUND ============ */
+async function generateAccount() {
+  const btn = document.getElementById("generateAccountBtn");
+  btn.disabled = true;
+  btn.innerText = "Generating...";
+  
+  const res = await fetch(API + "/api/generate-account", { method: "POST", headers });
+  const data = await res.json();
+  
+  if (res.ok) {
+    showMsg("Account created successfully!");
+    await loadUser();
+  } else {
+    showMsg(data.message || "Failed to generate account");
+  }
+  btn.disabled = false;
+  btn.innerText = "Generate Account Number";
+}
+
+function copyAccount() {
+  const acc = document.getElementById("accountNumber").innerText;
+  navigator.clipboard.writeText(acc);
+  showMsg("Account number copied!");
+}
+
+async function openFundModal() {
+  const amount = prompt("Enter amount to fund (min ₦100):");
+  if (!amount || amount < 100) return showMsg("Minimum funding is ₦100");
+  
+  const res = await fetch(API + "/api/fund/init", {
+    method: "POST",
+    headers,
+    body: JSON.stringify({ amount: Number(amount) })
+  });
+  const data = await res.json();
+  if (res.ok) window.location.href = data.url;
+  else showMsg(data.message);
+}
+
+/* ============ DATA ============ */
+function selectNetwork(net, el) {
+  selectedNetwork = net;
+  document.querySelectorAll(".networkItem").forEach(i => i.classList.remove("active"));
+  el.classList.add("active");
+  showPlans(net);
+}
+
+async function loadPlans() {
+  const res = await fetch(API + "/api/plans", { headers });
+  allPlans = await res.json();
+}
+
+function showPlans(network) {
+  const filtered = allPlans.filter(p => p.network.toUpperCase() === network.toUpperCase());
+  const list = document.getElementById("planList");
+  list.innerHTML = filtered.map(p => `
+    <div class="planItem" onclick='buyPlan(${JSON.stringify(p)})'>
+      ${user.is_top_user ? '<span class="topUserBadge">TOP</span>' : ''}
+      <strong>${p.name}</strong><br>
+      <span>₦${Number(p.price).toLocaleString()} | ${p.validity || 'N/A'}</span>
+    </div>
+  `).join("");
+}
+
+function buyPlan(plan) {
+  const phone = document.getElementById("dataPhone").value;
+  if (!phone) return showMsg("Enter phone number");
+  if (phone.length !== 11) return showMsg("Phone must be 11 digits");
+  
+  selectedPlan = plan;
+  currentAction = "data";
+  openModal("pinModal");
+}
+
+/* ============ PURCHASE ============ */
+async function confirmPurchase() {
+  const pin = document.getElementById("pinInput").value;
+  if (!pin || pin.length !== 4) return showMsg("Enter 4-digit PIN");
+  
+  closeModal("pinModal");
+  
+  if (currentAction === "data") {
+    const res = await fetch(API + "/api/buy-data", {
+      method: "POST",
+      headers,
+      body: JSON.stringify({
+        plan_id: selectedPlan.id,
+        phone: document.getElementById("dataPhone").value,
+        pin
+      })
+    });
+    const data = await res.json();
+    if (res.ok) {
+      showMsg(`Success! Ref: ${data.reference}`);
+      document.getElementById("walletBalance").innerText = "₦" + Number(data.balance).toLocaleString();
+      loadTransactions();
+      showSection("home");
+    } else {
+      showMsg(data.message);
+    }
+  }
+  
+  document.getElementById("pinInput").value = "";
+}
+
+/* ============ TRANSACTIONS ============ */
+async function loadTransactions() {
+  const res = await fetch(API + "/api/transactions", { headers });
+  const txs = await res.json();
+  document.getElementById("transactionHistory").innerHTML = "<h3>Recent Transactions</h3>" + 
+    txs.slice(0, 5).map(t => renderTransaction(t)).join("");
+}
+
+async function loadAllTransactions() {
+  const res = await fetch(API + "/api/transactions", { headers });
+  const txs = await res.json();
+  document.getElementById("allTransactions").innerHTML = txs.map(t => renderTransaction(t)).join("");
+}
+
+function renderTransaction(t) {
+  return `<div class="transactionCard">
+    <strong>${t.type}</strong> - ₦${Number(t.amount).toLocaleString()}<br>
+    <small>${t.phone || ''} | ${t.network || ''} | ${t.status}</small><br>
+    <small>${t.reference}</small><br>
+    <small>${new Date(t.created_at).toLocaleString()}</small>
+  </div>`;
+}
+
+/* ============ ADMIN: PROFIT ============ */
+async function loadProfitDashboard() {
+  const from = document.getElementById("profitFrom").value;
+  const to = document.getElementById("profitTo").value;
+  let url = API + "/admin/profit";
+  if (from || to) url += `?from=${from}&to=${to}`;
+  
+  const res = await fetch(url, { headers });
+  const data = await res.json();
+  
+  document.getElementById("totalProfit").innerText = "₦" + Number(data.total).toLocaleString();
+  document.getElementById("profitTable").innerHTML = `
+    <tr><th>Date</th><th>Sales</th><th>Profit</th></tr>
+    ${data.daily.map(d => `<tr><td>${d.date}</td><td>${d.total_sales}</td><td>₦${Number(d.total_profit).toLocaleString()}</td></tr>`).join("")}
+  `;
+}
+
+/* ============ ADMIN: TOP USERS ============ */
+async function loadTopUsers() {
+  const res = await fetch(API + "/admin/top-users", { headers });
+  const users = await res.json();
+  document.getElementById("topUsersList").innerHTML = users.map(u => `
+    <div class="userCard">
+      <strong>${u.username}</strong> ${u.is_top_user ? '<span class="badge badgeSuccess">TOP</span>' : ''}<br>
+      ${u.email}<br>
+      Spent: ₦${Number(u.total_spent).toLocaleString()} | Profit: ₦${Number(u.total_profit_generated).toLocaleString()}<br>
+      ${u.is_top_user ? 
+        `<button onclick="removeTopUser('${u.email}')" class="dangerBtn">Remove</button>` : 
+        `<button onclick="addTopUserDirect('${u.email}')" class="successBtn">Make Top User</button>`
+      }
+    </div>
+  `).join("");
+}
+
+async function addTopUser() {
+  const email = document.getElementById("topUserEmail").value;
+  if (!email) return showMsg("Enter email");
+  await addTopUserDirect(email);
+}
+
+async function addTopUserDirect(email) {
+  const res = await fetch(API + "/admin/top-users/add", {
+    method: "POST",
+    headers,
+    body: JSON.stringify({ email })
+  });
+  const data = await res.json();
+  showMsg(data.message);
+  loadTopUsers();
+}
+
+async function removeTopUser(email) {
+  const res = await fetch(API + "/admin/top-users/remove", {
+    method: "DELETE",
+    headers,
+    body: JSON.stringify({ email })
+  });
+  const data = await res.json();
+  showMsg(data.message);
+  loadTopUsers();
+}
+
+/* ============ ADMIN: PLANS ============ */
+async function loadAdminPlans() {
+  const res = await fetch(API + "/admin/plans", { headers });
+  const plans = await res.json();
+  document.getElementById("adminPlansList").innerHTML = plans.map(p => `
+    <div class="planCard">
+      <strong>${p.network} - ${p.name}</strong><br>
+      Price: ₦${p.price} | Top: ₦${p.top_price} | Cost: ₦${p.cost}<br>
+      Validity: ${p.validity} | ${p.restricted ? 'Restricted' : 'Open'}<br>
+      <button onclick='editPlan(${JSON.stringify(p)})' class="warningBtn">Edit</button>
+    </div>
+  `).join("");
+}
+
+async function addPlan() {
+  const body = {
+    plan_id: document.getElementById("newPlanId").value,
+    network: document.getElementById("newPlanNetwork").value,
+    name: document.getElementById("newPlanName").value,
+    price: document.getElementById("newPlanPrice").value,
+    top_price: document.getElementById("newPlanTopPrice").value,
+    cost: document.getElementById("newPlanCost").value,
+    validity: document.getElementById("newPlanValidity").value,
+    restricted: document.getElementById("newPlanRestricted").checked
+  };
+  
+  const res = await fetch(API + "/admin/plans", {
+    method: "POST",
+    headers,
+    body: JSON.stringify(body)
+  });
+  const data = await res.json();
+  showMsg(data.message);
+  if (res.ok) loadAdminPlans();
+}
+
+function editPlan(plan) {
+  editingPlanId = plan.id;
+  document.getElementById("editPlanName").value = plan.name;
+  document.getElementById("editPlanPrice").value = plan.price;
+  document.getElementById("editPlanTopPrice").value = plan.top_price;
+  document.getElementById("editPlanCost").value = plan.cost;
+  document.getElementById("editPlanValidity").value = plan.validity;
+  document.getElementById("editPlanRestricted").checked = plan.restricted;
+  openModal("editPlanModal");
+}
+
+async function savePlanEdit() {
+  const body = {
+    name: document.getElementById("editPlanName").value,
+    price: document.getElementById("editPlanPrice").value,
+    top_price: document.getElementById("editPlanTopPrice").value,
+    cost: document.getElementById("editPlanCost").value,
+    validity: document.getElementById("editPlanValidity").value,
+    restricted: document.getElementById("editPlanRestricted").checked
+  };
+  
+  const res = await fetch(API + `/admin/plans/${editingPlanId}`, {
+    method: "PUT",
+    headers,
+    body: JSON.stringify(body)
+  });
+  const data = await res.json();
+  showMsg(data.message);
+  closeModal("editPlanModal");
+  loadAdminPlans();
+}
+
+/* ============ ADMIN: USERS ============ */
+async function loadAdminUsers() {
+  const search = document.getElementById("userSearch").value;
+  const res = await fetch(API + `/admin/users?search=${search}`, { headers });
+  const users = await res.json();
+  document.getElementById("adminUsersList").innerHTML = users.map(u => `
+    <div class="userCard">
+      <strong>${u.username}</strong> ${u.is_top_user ? '<span class="badge badgeSuccess">TOP</span>' : ''}<br>
+      ${u.email}<br>
+      Wallet: ₦${Number(u.wallet_balance).toLocaleString()}<br>
+      <button onclick="toggleTopUser(${u.id}, ${!u.is_top_user})" class="${u.is_top_user ? 'dangerBtn' : 'successBtn'}">
+        ${u.is_top_user ? 'Remove Top' : 'Make Top User'}
+      </button>
+    </div>
+  `).join("");
+}
+
+async function toggleTopUser(id, status) {
+  await fetch(API + `/admin/users/${id}`, {
+    method: "PUT",
+    headers,
+    body: JSON.stringify({ is_top_user: status })
+  });
+  loadAdminUsers();
+}
+
+/* ============ ADMIN: WITHDRAWALS ============ */
+async function requestWithdrawal() {
+  const body = {
+    amount: document.getElementById("withdrawAmount").value,
+    bank_name: document.getElementById("withdrawBank").value,
+    account_number: document.getElementById("withdrawAccountNumber").value,
+    account_name: document.getElementById("withdrawAccountName").value
+  };
+  
+  const res = await fetch(API + "/admin/withdraw-request", {
+    method: "POST",
+    headers,
+    body: JSON.stringify(body)
+  });
+  const data = await res.json();
+  showMsg(data.message);
+  if (res.ok) {
+    loadWithdrawals();
+    loadUser();
+  }
+}
+
+async function loadWithdrawals() {
+  const res = await fetch(API + "/admin/withdrawals", { headers });
+  const wds = await res.json();
+  document.getElementById("withdrawalsList").innerHTML = wds.map(w => `
+    <div class="withdrawCard">
+      <strong>₦${Number(w.amount).toLocaleString()}</strong> - 
+      <span class="badge ${w.status === 'PAID' ? 'badgeSuccess' : 'badgeWarning'}">${w.status}</span><br>
+      ${w.bank_name} - ${w.account_number}<br>
+      ${w.account_name}<br>
+      <small>${w.reference}</small>
+    </div>
+  `).join("");
+}
+
+/* ============ ADMIN: REVERSE ============ */
+async function reverseTransaction() {
+  const ref = document.getElementById("reverseRef").value;
+  if (!ref) return showMsg("Enter reference");
+  
+  if (!confirm("Reverse this transaction?")) return;
+  
+  const res = await fetch(API + "/api/admin/reverse", {
+    method: "POST",
+    headers,
+    body: JSON.stringify({ reference: ref })
+  });
+  const data = await res.json();
+  showMsg(data.message);
+  if (res.ok) loadUser();
+}
+
+/* ============ PROFILE ============ */
+async function submitPassword() {
+  const oldPass = document.getElementById("oldPassword").value;
+  const newPass = document.getElementById("newPassword").value;
+  const res = await fetch(API + "/api/change-password", {
+    method: "POST",
+    headers,
+    body: JSON.stringify({ oldPass, newPass })
+  });
+  const data = await res.json();
+  showMsg(data.message);
+  if (res.ok) closeModal("passwordModal");
+}
+
+async function submitPin() {
+  const oldPin = document.getElementById("oldPin").value;
+  const newPin = document.getElementById("newPin").value;
+  const res = await fetch(API + "/api/change-pin", {
+    method: "POST",
+    headers,
+    body: JSON.stringify({ oldPin, newPin })
+  });
+  const data = await res.json();
+  showMsg(data.message);
+  if (res.ok) closeModal("pinModalBox");
+}
+
+function logout() {
+  localStorage.removeItem("token");
+  window.location.href = "login.html";
+}
+
+/* ============ MODALS ============ */
+function openModal(id) { document.getElementById(id).style.display = "flex"; }
+function closeModal(id) { document.getElementById(id).style.display = "none"; }
+
+function showMsg(text) {
+  document.getElementById("msgBox").innerHTML = `
+    <p>${text}</p>
+    <button onclick="closeModal('msgModal')">OK</button>
+  `;
+  openModal("msgModal");
+}
+</script>
 </body>
 </html>
