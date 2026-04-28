@@ -5,7 +5,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>BN HABEEB DATA HUB - Login</title>
+<title>BNHABEEB DATA HUB - Login</title>
 
 <style>
 
@@ -17,7 +17,7 @@ font-family:Arial;
 }
 
 body{
-background:#1a1403;
+background:#1a1a03;
 color:white;
 display:flex;
 justify-content:center;
@@ -33,7 +33,7 @@ top:0;
 left:0;
 width:100%;
 height:100%;
-background:#1a1403;
+background:#151a03;
 display:none;
 align-items:center;
 justify-content:center;
@@ -44,8 +44,8 @@ flex-direction:column;
 .loaderRing{
 width:70px;
 height:70px;
-border:6px solid #2c2105;
-border-top:6px solid gold;
+border:6px solid #282c05;
+border-top:6px solid rgb(229, 255, 0);
 border-radius:50%;
 animation:spin 1s linear infinite;
 }
@@ -60,20 +60,20 @@ animation:spin 1s linear infinite;
 width:110px;
 height:110px;
 border-radius:50%;
-border:4px solid gold;
+border:4px solid rgb(208, 255, 0);
 padding:8px;
 margin-bottom:40px;
-box-shadow:0 0 20px gold;
+box-shadow:0 0 20px rgb(217, 255, 0);
 }
 
 /* CARD */
 .card{
-background:#2c2105;
+background:#2b2c05;
 padding:30px;
 border-radius:20px;
 width:90%;
 max-width:380px;
-box-shadow:0 0 30px rgba(255,215,0,0.2);
+box-shadow:0 0 30px rgba(175, 172, 12, 0.2);
 }
 
 .title{
@@ -93,7 +93,7 @@ width:100%;
 padding:14px;
 border-radius:12px;
 border:none;
-background:#0d0a02;
+background:#0d0d02;
 color:white;
 font-size:16px;
 outline:none;
@@ -107,7 +107,7 @@ top:50%;
 transform:translateY(-50%);
 background:none;
 border:none;
-color:gold;
+color:rgb(208, 255, 0);
 cursor:pointer;
 }
 
@@ -117,7 +117,7 @@ width:100%;
 padding:14px;
 border:none;
 border-radius:12px;
-background:gold;
+background:rgb(255, 251, 0);
 color:black;
 font-size:17px;
 margin-top:10px;
@@ -131,7 +131,7 @@ opacity:0.6;
 /* BIOMETRIC */
 .biometric{
 margin-top:16px;
-border:2px dashed gold;
+border:2px dashed rgb(203, 233, 32);
 padding:16px;
 border-radius:12px;
 text-align:center;
@@ -141,7 +141,7 @@ cursor:pointer;
 /* SIGNUP */
 .signup{
 margin-top:15px;
-border:2px solid gold;
+border:2px solid rgb(196, 228, 13);
 padding:14px;
 border-radius:12px;
 text-align:center;
@@ -156,7 +156,8 @@ display:block;
 </style>
 
 </head>
-
+<link rel="manifest" href="/manifest.json">
+<meta name="theme-color" content="#00c853">
 <body>
 
 <div id="loginLoader">
@@ -171,7 +172,7 @@ display:block;
 <div class="title">Welcome Back</div>
 
 <div class="inputBox">
-<input id="loginUsername" placeholder="Username">
+<input id="loginUsername" placeholder="Username or Email">
 </div>
 
 <div class="inputBox">
@@ -191,20 +192,220 @@ display:block;
 
 </div>
 
-<script src="login.js"></script>
-
 <script>
-function togglePassword(){
-const input=document.getElementById("loginPassword")
-const btn=document.querySelector(".showBtn")
+const API = "https://mayconnect-backend-1.onrender.com";
 
-if(input.type==="password"){
-input.type="text"
-btn.innerText="Hide"
-}else{
-input.type="password"
-btn.innerText="Show"
+/* ELEMENTS */
+const usernameInput = document.getElementById("loginUsername");
+const passwordInput = document.getElementById("loginPassword");
+const loginBtn = document.getElementById("loginBtn");
+const loader = document.getElementById("loginLoader");
+
+/* SOUND */
+const welcomeSound = new Audio("sounds/welcome.mp3");
+
+/* AUTO LOGIN */
+document.addEventListener("DOMContentLoaded", () => {
+  const token = localStorage.getItem("token");
+  if (token) {
+    window.location.href = "dashboard.html";
+  }
+});
+
+/* PASSWORD TOGGLE */
+function togglePassword(){
+  if(!passwordInput) return;
+  passwordInput.type = passwordInput.type === "password"? "text" : "password";
+  document.querySelector(".showBtn").innerText = passwordInput.type === "password"? "Show" : "Hide";
 }
+
+/* LOGIN CLICK */
+loginBtn.addEventListener("click", login);
+
+/* LOGIN FUNCTION */
+async function login(){
+  const username = usernameInput.value.trim();
+  const password = passwordInput.value.trim();
+
+  if(!username ||!password){
+    alert("Enter username and password");
+    return;
+  }
+
+  loginBtn.disabled = true;
+  loader.style.display = "flex";
+
+  try{
+    const res = await fetch(API + "/api/login",{
+      method:"POST",
+      headers:{ "Content-Type":"application/json" },
+      body:JSON.stringify({ username, password })
+    });
+
+    let data;
+    try{
+      data = await res.json();
+    }catch{
+      throw new Error("Invalid server response");
+    }
+
+    if(!res.ok){
+      throw new Error(data.message || "Login failed");
+    }
+
+    if(!data.token){
+      throw new Error("No token received");
+    }
+
+    /* SAVE SESSION */
+    localStorage.setItem("token", data.token);
+    localStorage.setItem("username", data.username);
+
+    /* ADMIN */
+    if(data.is_admin){
+      alert("Welcome Admin");
+    }
+
+    /* SOUND */
+    welcomeSound.play().catch(()=>{});
+
+    /* REDIRECT */
+    setTimeout(()=>{
+      window.location.href = "dashboard.html";
+    },600);
+
+  }catch(err){
+    console.error(err);
+    alert(err.message || "Server error");
+    loader.style.display = "none";
+    loginBtn.disabled = false;
+  }
+}
+
+/* WEBAUTHN HELPERS */
+async function base64URLToBuffer(base64URL) {
+  const base64 = base64URL.replace(/-/g, '+').replace(/_/g, '/');
+  const padLen = (4 - (base64.length % 4)) % 4;
+  const padded = base64 + '='.repeat(padLen);
+  const binary = atob(padded);
+  const buffer = new ArrayBuffer(binary.length);
+  const bytes = new Uint8Array(buffer);
+  for (let i = 0; i < binary.length; i++) {
+    bytes[i] = binary.charCodeAt(i);
+  }
+  return buffer;
+}
+
+async function bufferToBase64URL(buffer) {
+  const bytes = new Uint8Array(buffer);
+  let str = '';
+  for (const charCode of bytes) {
+    str += String.fromCharCode(charCode);
+  }
+  const base64 = btoa(str);
+  return base64.replace(/\+/g, '-').replace(/\//g, '_').replace(/=/g, '');
+}
+
+/* BIOMETRIC LOGIN */
+async function biometricLogin(){
+  const usernameOrEmail = usernameInput.value.trim();
+  
+  if(!usernameOrEmail){
+    alert("Enter your username or email first");
+    return;
+  }
+
+  if(!window.PublicKeyCredential){
+    alert("Biometric not supported on this device");
+    return;
+  }
+
+  loader.style.display="flex";
+
+  try{
+    // 1. Get auth options from server - backend expects email
+    const startRes = await fetch(API + "/api/auth/webauthn/login-start", {
+      method:"POST",
+      headers:{ "Content-Type":"application/json" },
+      body:JSON.stringify({ email: usernameOrEmail })
+    });
+
+    if(!startRes.ok){
+      const err = await startRes.json();
+      throw new Error(err.error || "No biometric registered for this account");
+    }
+
+    const options = await startRes.json();
+
+    // 2. Convert challenge + allowCredentials
+    options.challenge = await base64URLToBuffer(options.challenge);
+    if(options.allowCredentials){
+      options.allowCredentials = await Promise.all(
+        options.allowCredentials.map(async cred => ({
+         ...cred,
+          id: await base64URLToBuffer(cred.id)
+        }))
+      );
+    }
+
+    // 3. Call fingerprint sensor
+    const credential = await navigator.credentials.get({ publicKey: options });
+
+    // 4. Send result to server
+    const finishRes = await fetch(API + "/api/auth/webauthn/login-finish", {
+      method:"POST",
+      headers:{ "Content-Type":"application/json" },
+      body:JSON.stringify({
+        email: usernameOrEmail,
+        id: credential.id,
+        rawId: await bufferToBase64URL(credential.rawId),
+        response: {
+          authenticatorData: await bufferToBase64URL(credential.response.authenticatorData),
+          clientDataJSON: await bufferToBase64URL(credential.response.clientDataJSON),
+          signature: await bufferToBase64URL(credential.response.signature),
+          userHandle: credential.response.userHandle
+           ? await bufferToBase64URL(credential.response.userHandle)
+            : null,
+        },
+        type: credential.type,
+        clientExtensionResults: credential.getClientExtensionResults()
+      })
+    });
+
+    if(!finishRes.ok){
+      const err = await finishRes.json();
+      throw new Error(err.error || "Authentication failed");
+    }
+
+    const { token, username, is_admin } = await finishRes.json();
+
+    /* SAVE SESSION */
+    localStorage.setItem("token", token);
+    localStorage.setItem("username", username);
+
+    /* ADMIN */
+    if(is_admin){
+      alert("Welcome Admin");
+    }
+
+    /* SOUND */
+    welcomeSound.play().catch(()=>{});
+
+    /* REDIRECT */
+    setTimeout(()=>{
+      window.location.href = "dashboard.html";
+    },600);
+
+  }catch(e){
+    console.error(e);
+    loader.style.display="none";
+    
+    if (e.name === 'NotAllowedError') {
+      alert('Fingerprint cancelled or failed');
+    } else {
+      alert('Biometric login failed: ' + e.message);
+    }
+  }
 }
 </script>
 
