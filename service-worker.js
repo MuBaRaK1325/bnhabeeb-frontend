@@ -1,11 +1,17 @@
-const CACHE_NAME = 'bnhabeeb-v1'; // bump when you update
+const CACHE_NAME = 'bnhabeeb-v14'; // bumped from v1 to v14
 const urlsToCache = [
   '/',
   '/dashboard.html',
   '/login.html',
   '/app.js',
   '/images/bnhabeeb-192.png',
-  '/images/bnhabeeb-512.png'
+  '/images/bnhabeeb-512.png',
+  '/images/bnhabeeb-192-maskable.png',
+  '/images/bnhabeeb-512-maskable.png',
+  '/images/mtn.png',
+  '/images/glo.png',
+  '/images/airtel.png',
+  '/images/9mobile.png'
 ];
 
 self.addEventListener('install', event => {
@@ -26,7 +32,6 @@ self.addEventListener('activate', event => {
 
 self.addEventListener('fetch', event => {
   if (event.request.method !== 'GET') return;
-  // Don't cache API calls
   if (event.request.url.includes('/api/')) return;
   
   event.respondWith(
@@ -34,7 +39,6 @@ self.addEventListener('fetch', event => {
   );
 });
 
-// Handle push notifications
 self.addEventListener('push', event => {
   const data = event.data ? event.data.json() : {};
   const title = data.title || 'BNHABEEB';
