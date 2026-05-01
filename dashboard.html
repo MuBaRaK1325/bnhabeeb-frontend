@@ -12,17 +12,23 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="BNHABEEB">
-<link rel="apple-touch-icon" href="/images/BNHABEEB.png">
+<link rel="apple-touch-icon" href="/assets/images/favicon-180.png">
+<link rel="icon" href="/assets/images/favicon.ico">
+<meta property="og:image" content="/assets/images/og-image.png">
+<meta property="og:title" content="BN HABEEB DATA HUB">
+<meta property="og:description" content="Buy cheap data, airtime and pay bills instantly">
 
 <style>
 :root{
---primary:#b6a617;
---bg:#0f1005;
---card:#252a0b;
---accent:#ced113;
+--primary:#FFD700;
+--bg:#000000;
+--card:#1a1a1a;
+--accent:#FFE55C;
 --success:#00c853;
 --danger:#ff4d4d;
 --warning:#ffa000;
+--gold:#FFD700;
+--black:#000000;
 }
 
 *{box-sizing:border-box}
@@ -42,6 +48,7 @@ justify-content:space-between;
 align-items:center;
 padding:15px;
 background:var(--card);
+border-bottom:2px solid var(--primary);
 }
 
 .logoContainer{
@@ -60,6 +67,7 @@ object-fit:cover;
 
 .companyBadge{
 background:var(--primary);
+color:var(--black);
 padding:4px 8px;
 border-radius:6px;
 font-size:12px;
@@ -72,7 +80,8 @@ margin:20px;
 padding:20px;
 border-radius:16px;
 text-align:center;
-background:linear-gradient(135deg,var(--primary),var(--accent));
+background:linear-gradient(135deg,var(--black),var(--primary));
+border:1px solid var(--primary);
 }
 
 .adminWalletCard{
@@ -99,8 +108,9 @@ border-radius:12px;
 text-align:center;
 cursor:pointer;
 transition:0.2s;
+border:1px solid #333;
 }
-.quickCard:active{transform:scale(0.97);}
+.quickCard:active{transform:scale(0.97);border-color:var(--primary);}
 
 /* SECTION */
 .section{display:none;padding:20px;}
@@ -111,11 +121,12 @@ width:100%;
 padding:12px;
 margin-top:10px;
 border-radius:8px;
-border:none;
-background:#353a1a;
+border:1px solid #333;
+background:#111;
 color:white;
 font-size:16px;
 }
+input:focus,select:focus{border-color:var(--primary);outline:none;}
 
 label{
 display:block;
@@ -130,17 +141,17 @@ background:var(--primary);
 border:none;
 padding:12px;
 border-radius:10px;
-color:white;
+color:var(--black);
 margin-top:10px;
 width:100%;
 cursor:pointer;
 font-weight:bold;
 font-size:16px;
 }
-.primaryBtn{background:var(--primary);}
-.dangerBtn{background:var(--danger);}
-.successBtn{background:var(--success);}
-.warningBtn{background:var(--warning);}
+.primaryBtn{background:var(--primary);color:var(--black);}
+.dangerBtn{background:var(--danger);color:white;}
+.successBtn{background:var(--success);color:white;}
+.warningBtn{background:var(--warning);color:var(--black);}
 button:disabled{opacity:0.5;cursor:not-allowed;}
 
 /* NETWORK */
@@ -186,8 +197,9 @@ margin-top:10px;
 cursor:pointer;
 position:relative;
 transition:0.2s;
+border:1px solid #333;
 }
-.planItem:active{background:#363a11;}
+.planItem:active{background:#222;border-color:var(--primary);}
 
 .topUserBadge{
 position:absolute;
@@ -205,6 +217,8 @@ background:var(--card);
 padding:12px;
 border-radius:10px;
 margin-top:10px;
+border:1px solid #333;
+cursor:pointer;
 }
 
 .userCard, .withdrawCard, .planCard{
@@ -212,6 +226,7 @@ background:var(--card);
 padding:12px;
 border-radius:10px;
 margin-top:10px;
+border:1px solid #333;
 }
 
 /* TABLE */
@@ -226,9 +241,9 @@ overflow:hidden;
 th,td{
 padding:10px;
 text-align:left;
-border-bottom:1px solid #353a1a;
+border-bottom:1px solid #333;
 }
-th{background:#373a11;}
+th{background:#111;color:var(--primary);}
 
 /* NAV */
 .bottomNav{
@@ -239,7 +254,7 @@ background:var(--card);
 display:flex;
 justify-content:space-around;
 padding:8px 0;
-border-top:1px solid #393a1a;
+border-top:2px solid var(--primary);
 z-index:999;
 }
 
@@ -270,6 +285,7 @@ max-width:400px;
 max-height:80vh;
 overflow-y:auto;
 text-align:center;
+border:2px solid var(--primary);
 }
 
 .modal-buttons{
@@ -282,10 +298,61 @@ margin-top:15px;
 flex:1;
 }
 
+/* RECEIPT STYLES - BN HABEEB GOLD THEME */
+.receiptBox{
+background:linear-gradient(135deg, var(--black), #1a1a1a);
+padding:0;
+border-radius:12px;
+width:90%;
+max-width:380px;
+text-align:left;
+border:2px solid var(--primary);
+overflow:hidden;
+}
+.receiptHeader{
+background:var(--primary);
+color:var(--black);
+padding:15px;
+text-align:center;
+}
+.receiptHeader img{
+width:50px;
+height:50px;
+border-radius:50%;
+border:2px solid var(--black);
+}
+.receiptHeader h3{
+margin:8px 0 0 0;
+font-size:18px;
+}
+.receiptBody{
+padding:20px;
+}
+.receiptRow{
+display:flex;
+justify-content:space-between;
+padding:10px 0;
+border-bottom:1px dashed #333;
+font-size:14px;
+}
+.receiptRow:last-child{border:none;}
+.receiptLabel{opacity:0.7;}
+.receiptValue{font-weight:bold;color:var(--primary);}
+.statusSuccess{color:var(--success);}
+.statusFailed{color:var(--danger);}
+.statusPending{color:var(--warning);}
+.receiptFooter{
+background:#111;
+padding:12px;
+text-align:center;
+font-size:11px;
+opacity:0.6;
+}
+
 /* ADMIN */
 .adminOnly{
 display:none;
-background:#35340f;
+background:#111;
 padding:15px;
 border-radius:10px;
 margin-top:20px;
@@ -293,10 +360,11 @@ border:1px solid var(--primary);
 }
 
 .adminSection{
-background:#31350f;
+background:#0d0d0d;
 padding:15px;
 border-radius:10px;
 margin-top:15px;
+border:1px solid #333;
 }
 
 .badge{
@@ -305,9 +373,9 @@ border-radius:4px;
 font-size:11px;
 font-weight:bold;
 }
-.badgeSuccess{background:var(--success);}
-.badgeDanger{background:var(--danger);}
-.badgeWarning{background:var(--warning);}
+.badgeSuccess{background:var(--success);color:white;}
+.badgeDanger{background:var(--danger);color:white;}
+.badgeWarning{background:var(--warning);color:var(--black);}
 
 /* FOOTER */
 .footer{
@@ -318,7 +386,7 @@ opacity:0.9;
 }
 
 .footer a{
-color:#fffc3c;
+color:var(--primary);
 text-decoration:none;
 display:block;
 margin-top:8px;
@@ -331,8 +399,8 @@ position:fixed;
 bottom:70px;
 left:0;
 right:0;
-background:rgb(228, 231, 59);
-color:#fff;
+background:var(--primary);
+color:var(--black);
 padding:16px;
 text-align:center;
 z-index:9998;
@@ -413,9 +481,65 @@ padding:8px 16px;
 </div>
 </div>
 
+<!-- RECEIPT MODAL - BN HABEEB -->
+<div id="receiptModal" class="modal">
+<div class="receiptBox">
+  <div class="receiptHeader">
+    <img src="/assets/images/logo.png" alt="BNHABEEB">
+    <h3>BN HABEEB DATA HUB</h3>
+    <small>Transaction Receipt</small>
+  </div>
+  <div class="receiptBody">
+    <div class="receiptRow">
+      <span class="receiptLabel">Transaction ID</span>
+      <span class="receiptValue" id="rcptRef">-</span>
+    </div>
+    <div class="receiptRow">
+      <span class="receiptLabel">Date</span>
+      <span class="receiptValue" id="rcptDate">-</span>
+    </div>
+    <div class="receiptRow">
+      <span class="receiptLabel">Service</span>
+      <span class="receiptValue" id="rcptService">Data</span>
+    </div>
+    <div class="receiptRow">
+      <span class="receiptLabel">Network</span>
+      <span class="receiptValue" id="rcptNetwork">-</span>
+    </div>
+    <div class="receiptRow">
+      <span class="receiptLabel">Phone Number</span>
+      <span class="receiptValue" id="rcptPhone">-</span>
+    </div>
+    <div class="receiptRow">
+      <span class="receiptLabel">Plan</span>
+      <span class="receiptValue" id="rcptPlan">-</span>
+    </div>
+    <div class="receiptRow">
+      <span class="receiptLabel">Amount</span>
+      <span class="receiptValue" id="rcptAmount">₦0</span>
+    </div>
+    <div class="receiptRow">
+      <span class="receiptLabel">Status</span>
+      <span class="receiptValue" id="rcptStatus">-</span>
+    </div>
+    <div class="receiptRow">
+      <span class="receiptLabel">Balance After</span>
+      <span class="receiptValue" id="rcptBalance">₦0</span>
+    </div>
+  <div class="receiptFooter">
+    Thank you for using BN HABEEB DATA HUB<br>
+    Support: 08108871581 | 08117988561
+  </div>
+  <div style="padding:15px;">
+    <button onclick="shareReceipt()" class="primaryBtn">Share Receipt</button>
+    <button onclick="closeModal('receiptModal')" class="dangerBtn" style="margin-top:10px;">Close</button>
+  </div>
+</div>
+</div>
+
 <header>
 <div class="logoContainer">
-  <img src="images/BNHABEEB.png" alt="Company Logo" id="companyLogo">
+  <img src="/assets/images/logo-sm.png" alt="Company Logo" id="companyLogo">
   <span class="companyBadge" id="companyBadge">LOADING</span>
 </div>
 <div onclick="showSection('profile')">👤</div>
@@ -612,7 +736,7 @@ padding:8px 16px;
 <p>Need Help?</p>
 <a href="https://wa.me/2348108871581" target="_blank">📞 Support (08108871581)</a>
 <a href="https://wa.me/2348117988561" target="_blank">👨‍💻 Developer (08117988561)</a>
-<p>© TEEVERSH GLOBAL RESOURCES NIG LTD</p>
+<p>© BNHABEEB DATA HUB</p>
 <p> DEVELOPED BY MAYCONNECT TECHNOLOGIES NIG LTD</p>
 </div>
 
@@ -679,10 +803,59 @@ padding:8px 16px;
 
 <!-- INSTALL BANNER -->
 <div id="installBanner">
-  <span>Install BNHABEEB for faster access</span>
+  <span>Install BN HABEEB for faster access</span>
   <button id="installBtn" class="primaryBtn">Install</button>
   <button id="closeBanner" class="dangerBtn">Later</button>
 </div>
+
+<script>
+// SERVICE WORKER REGISTRATION
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/service-worker.js')
+      .then(reg => console.log('SW registered'))
+      .catch(err => console.log('SW failed:', err));
+  });
+}
+
+// RECEIPT FUNCTIONS - ADD TO YOUR app.js
+function showReceipt(data) {
+  document.getElementById('rcptRef').textContent = data.reference || '-';
+  document.getElementById('rcptDate').textContent = new Date(data.created_at || Date.now()).toLocaleString();
+  document.getElementById('rcptService').textContent = data.type || 'Data';
+  document.getElementById('rcptNetwork').textContent = data.network || '-';
+  document.getElementById('rcptPhone').textContent = data.phone || '-';
+  document.getElementById('rcptPlan').textContent = data.plan_name || data.amount || '-';
+  document.getElementById('rcptAmount').textContent = '₦' + (data.amount || 0);
+  
+  const statusEl = document.getElementById('rcptStatus');
+  statusEl.textContent = data.status || 'Success';
+  statusEl.className = 'receiptValue ' + 
+    (data.status === 'success' ? 'statusSuccess' : 
+     data.status === 'failed' ? 'statusFailed' : 'statusPending');
+  
+  document.getElementById('rcptBalance').textContent = '₦' + (data.balance_after || 0);
+  openModal('receiptModal');
+}
+
+function shareReceipt() {
+  const ref = document.getElementById('rcptRef').textContent;
+  const network = document.getElementById('rcptNetwork').textContent;
+  const phone = document.getElementById('rcptPhone').textContent;
+  const plan = document.getElementById('rcptPlan').textContent;
+  const amount = document.getElementById('rcptAmount').textContent;
+  const status = document.getElementById('rcptStatus').textContent;
+  
+  const text = `*BN HABEEB DATA HUB RECEIPT*\n\nRef: ${ref}\nNetwork: ${network}\nPhone: ${phone}\nPlan: ${plan}\nAmount: ${amount}\nStatus: ${status}\n\nThank you!`;
+  
+  if (navigator.share) {
+    navigator.share({text: text});
+  } else {
+    navigator.clipboard.writeText(text);
+    showMsg('Receipt copied to clipboard');
+  }
+}
+</script>
 
 <script src="app.js?v=2.3.0"></script>
 </body>
