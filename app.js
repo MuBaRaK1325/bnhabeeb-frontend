@@ -30,9 +30,9 @@ function bufferEncode(value) {
     binary += String.fromCharCode(uint8Array[i]);
   }
   return btoa(binary)
- .replace(/\+/g, '-')
- .replace(/\//g, '_')
- .replace(/=+$/, '');
+.replace(/\+/g, '-')
+.replace(/\//g, '_')
+.replace(/=+$/, '');
 }
 
 function bufferDecode(value) {
@@ -189,7 +189,62 @@ function txCard(t) {
     ${t.phone || t.network || ""}<br>
     <span style="color:${statusColor}">${t.status}</span>
     <small style="float:right">${formatDate(t.created_at)}</small>`;
+
+  // Click to view receipt
+  div.onclick = () => {
+    showReceipt({
+      reference: t.reference,
+      created_at: t.created_at,
+      type: t.type,
+      network: t.network,
+      phone: t.phone,
+      plan_name: t.plan_name || t.type,
+      amount: t.amount,
+      status: t.status,
+      balance_after: t.balance_after
+    });
+  };
   return div;
+}
+
+/* ================= RECEIPT FUNCTIONS - BN HABEEB ================= */
+function showReceipt(data) {
+  document.getElementById('rcptRef').textContent = data.reference || '-';
+  document.getElementById('rcptDate').textContent = new Date(data.created_at || Date.now()).toLocaleString();
+  document.getElementById('rcptService').textContent = data.type || 'Data';
+  document.getElementById('rcptNetwork').textContent = data.network || '-';
+  document.getElementById('rcptPhone').textContent = data.phone || '-';
+  document.getElementById('rcptPlan').textContent = data.plan_name || data.plan || '-';
+  document.getElementById('rcptAmount').textContent = formatNaira(data.amount || 0);
+
+  const statusEl = document.getElementById('rcptStatus');
+  const status = data.status || 'Success';
+  statusEl.textContent = status;
+  statusEl.className = 'receiptValue ' +
+    (status === 'SUCCESS' || status === 'Success'? 'statusSuccess' :
+     status === 'FAILED'? 'statusFailed' : 'statusPending');
+
+  document.getElementById('rcptBalance').textContent = formatNaira(data.balance_after || data.balance || 0);
+  openModal('receiptModal');
+}
+
+function shareReceipt() {
+  const ref = document.getElementById('rcptRef').textContent;
+  const network = document.getElementById('rcptNetwork').textContent;
+  const phone = document.getElementById('rcptPhone').textContent;
+  const plan = document.getElementById('rcptPlan').textContent;
+  const amount = document.getElementById('rcptAmount').textContent;
+  const status = document.getElementById('rcptStatus').textContent;
+  const date = document.getElementById('rcptDate').textContent;
+
+  const text = `*BN HABEEB DATA HUB RECEIPT*\n\nRef: ${ref}\nDate: ${date}\nNetwork: ${network}\nPhone: ${phone}\nPlan: ${plan}\nAmount: ${amount}\nStatus: ${status}\n\nThank you for using BN HABEEB!`;
+
+  if (navigator.share) {
+    navigator.share({text: text});
+  } else {
+    navigator.clipboard.writeText(text);
+    showMsg('Receipt copied to clipboard', 'success');
+  }
 }
 
 /* ================= PLANS ================= */
@@ -307,14 +362,14 @@ async function enableBiometric() {
     if (start.error) throw new Error(start.error);
 
     const options = {
-     ...start,
+    ...start,
       challenge: bufferDecode(start.challenge),
       user: {...start.user, id: bufferDecode(start.user.id) }
     };
 
     if (options.excludeCredentials && options.excludeCredentials.length > 0) {
       options.excludeCredentials = options.excludeCredentials.map(cred => ({
-       ...cred,
+      ...cred,
         id: bufferDecode(cred.id)
       }));
     } else {
@@ -380,10 +435,10 @@ async function loginWithBiometric() {
       showLoader('Touch fingerprint sensor...');
 
       const options = {
-       ...start,
+      ...start,
         challenge: bufferDecode(start.challenge),
         allowCredentials: start.allowCredentials.map(cred => ({
-         ...cred,
+        ...cred,
           id: bufferDecode(cred.id)
         }))
       };
@@ -514,7 +569,7 @@ async function purchaseWithBiometric() {
 
     start.challenge = bufferDecode(start.challenge);
     start.allowCredentials = start.allowCredentials.map(cred => ({
-    ...cred,
+   ...cred,
       id: bufferDecode(cred.id)
     }));
 
@@ -575,9 +630,22 @@ async function buyData(pin) {
     hideLoader();
 
     if (res.ok && data.success!== false) {
-      showMsg("Data purchase successful ✅", "success");
       updateWallet(data.balance);
       fetchTransactions();
+
+      // Show BN HABEEB receipt with Data, Status, Phone Number
+      showReceipt({
+        reference: data.reference || 'TXN' + Date.now(),
+        created_at: data.created_at || new Date().toISOString(),
+        type: 'Data',
+        network: selectedNetwork?.toUpperCase(),
+        phone: phone,
+        plan_name: selectedPlan?.name,
+        amount: selectedPlan?.price,
+        status: data.status || 'SUCCESS',
+        balance_after: data.balance
+      });
+
       if (el("dataPhone")) el("dataPhone").value = '';
     } else {
       showMsg(data.message || "Purchase failed", "error");
@@ -609,9 +677,22 @@ async function buyAirtime(pin) {
     hideLoader();
 
     if (res.ok && data.success!== false) {
-      showMsg("Airtime purchase successful ✅", "success");
       updateWallet(data.balance);
       fetchTransactions();
+
+      // Show BN HABEEB receipt
+      showReceipt({
+        reference: data.reference || 'TXN' + Date.now(),
+        created_at: data.created_at || new Date().toISOString(),
+        type: 'Airtime',
+        network: airtimeNetwork?.toUpperCase(),
+        phone: phone,
+        plan_name: 'Airtime Top-up',
+        amount: amount,
+        status: data.status || 'SUCCESS',
+        balance_after: data.balance
+      });
+
       if (el("airtimePhone")) el("airtimePhone").value = '';
       if (el("airtimeAmount")) el("airtimeAmount").value = '';
     } else {
