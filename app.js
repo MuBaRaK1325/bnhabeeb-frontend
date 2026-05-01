@@ -96,36 +96,39 @@ function checkAuth() {
   return true;
 }
 
-/* ================= LOAD DASHBOARD ================= */
 async function loadDashboard() {
   if (!checkAuth()) return;
 
   try {
     const res = await fetch(API + "/api/me", { headers: { Authorization: "Bearer " + getToken() } });
+    if (!res.ok) throw new Error('Auth failed');
     currentUser = await res.json();
     window.CURRENT_USER_ID = currentUser.id;
-  } catch {
-    logout();
-    return;
+  } catch (e) {
+    console.log('Load user failed:', e);
+    // Don't logout yet - show home anyway so screen isn't blank
   }
 
-  if (el("usernameDisplay")) el("usernameDisplay").innerText = "Hello " + currentUser.username;
-  if (el("companyBadge")) el("companyBadge").innerText = currentUser.company.toUpperCase();
-
-  if (currentUser && currentUser.is_admin === true) {
-    document.querySelectorAll(".adminOnly").forEach(e => e.style.display = "block");
-    if (el("adminWalletBalance")) el("adminWalletBalance").innerText = formatNaira(currentUser.admin_wallet);
-    if (el("adminWalletBalance2")) el("adminWalletBalance2").innerText = formatNaira(currentUser.admin_wallet);
-  }
-
+  // Always show something even if API fails
   initNavigation();
-  await loadAccount();
-  await loadPlans();
-  fetchTransactions();
-  if (currentUser.is_admin) loadAdminData();
-  checkBiometricStatus();
-
-  setTimeout(connectWebSocket, 1000);
+  
+  if (currentUser) {
+    if (el("usernameDisplay")) el("usernameDisplay").innerText = "Hello " + currentUser.username;
+    if (el("companyBadge")) el("companyBadge").innerText = currentUser.company.toUpperCase();
+    
+    if (currentUser.is_admin === true) {
+      document.querySelectorAll(".adminOnly").forEach(e => e.style.display = "block");
+      if (el("adminWalletBalance")) el("adminWalletBalance").innerText = formatNaira(currentUser.admin_wallet);
+      if (el("adminWalletBalance2")) el("adminWalletBalance2").innerText = formatNaira(currentUser.admin_wallet);
+    }
+    
+    await loadAccount();
+    await loadPlans();
+    fetchTransactions();
+    if (currentUser.is_admin) loadAdminData();
+    checkBiometricStatus();
+    setTimeout(connectWebSocket, 1000);
+  }
 }
 
 /* ================= NAV ================= */
