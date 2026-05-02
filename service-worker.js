@@ -5,17 +5,17 @@ const urlsToCache = [
   '/login.html',
   '/app.js',
   '/manifest.json',
-  '/assets/images/logo.png',
-  '/assets/images/logo-sm.png',
-  '/assets/images/logo-xs.png',
-  '/assets/images/favicon.ico',
-  '/assets/images/favicon-16.png',
-  '/assets/images/favicon-32.png',
-  '/assets/images/favicon-180.png',
-  '/assets/images/favicon-192.png',
-  '/assets/images/favicon-512.png',
-  '/assets/images/og-image.png',
-  '/assets/images/og-image-dark.png'
+  '/src/images/logo.png',
+  '/src/images/logo-sm.png',
+  '/src/images/logo-xs.png',
+  '/src/images/favicon.ico',
+  '/src/images/favicon-16.png',
+  '/src/images/favicon-32.png',
+  '/src/images/favicon-180.png',
+  '/src/images/favicon-192.png',
+  '/src/images/favicon-512.png',
+  '/src/images/og-image.png',
+  '/src/images/og-image-dark.png'
 ];
 
 self.addEventListener('install', event => {
@@ -71,8 +71,8 @@ self.addEventListener('push', event => {
   const title = data.title || 'BN HABEEB';
   const options = {
     body: data.body || 'You have a new update',
-    icon: '/assets/images/favicon-192.png',
-    badge: '/assets/images/favicon-192.png',
+    icon: '/src/images/favicon-192.png',
+    badge: '/src/images/favicon-192.png',
     vibrate: [200, 100, 200],
     data: data.url || '/dashboard.html',
     actions: [
