@@ -1,10 +1,13 @@
-<!DOCTYPE html><html lang="en">
+<!DOCTYPE html>
+<html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>MAY-Connect | Welcome</title>
+<title>BNHABEEB DATA HUB | Welcome</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <link rel="stylesheet" href="styles.css">
-<link rel="icon" href="images/logo.png"><style>
+<link rel="icon" type="image/png" href="images/logo.png">
+<link rel="apple-touch-icon" href="images/logo.png">
+<style>
 #splashLoader{
 position:fixed;
 top:0;
@@ -22,16 +25,35 @@ transition:opacity .4s ease;
 opacity:0;
 pointer-events:none;
 }
-</style></head>
-<body><div id="splashLoader">
-<img src="images/logo.png" style="width:90px;border-radius:50%">
-</div><div class="auth-container">
-<div class="auth-card" style="padding-top:2.5rem;"><div class="logo-circle">
-<img src="images/logo.png">
-</div><h2>MAY-Connect</h2>
-<p>Fast • Secure • Reliable Digital Services</p><div class="welcome-buttons">
-<a href="login.html" class="btn">Login</a>
-<a href="signup.html" class="btn">Sign Up</a>
-</div></div>
-</div><script src="app.js"></script></body>
+</style>
+</head>
+<body>
+<div id="splashLoader">
+  <img src="images/logo.png" alt="BNHABEEB DATA HUB" style="width:90px;border-radius:50%">
+</div>
+
+<div class="auth-container">
+  <div class="auth-card" style="padding-top:2.5rem;">
+    <div class="logo-circle">
+      <img src="images/logo.png" alt="BNHABEEB DATA HUB Logo">
+    </div>
+    <h2>BNHABEEB DATA HUB</h2>
+    <p>Fast • Secure • Reliable Digital Services</p>
+    <div class="welcome-buttons">
+      <a href="login.html" class="btn">Login</a>
+      <a href="signup.html" class="btn">Sign Up</a>
+    </div>
+  </div>
+</div>
+
+<script src="app.js"></script>
+<script>
+// Auto-hide splash after 1.5s
+window.addEventListener('load', () => {
+  setTimeout(() => {
+    document.getElementById('splashLoader').classList.add('hide');
+  }, 1500);
+});
+</script>
+</body>
 </html>

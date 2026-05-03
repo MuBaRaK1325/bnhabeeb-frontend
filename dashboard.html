@@ -12,9 +12,9 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="BNHABEEB">
-<link rel="apple-touch-icon" href="/src/images/favicon-180.png">
-<link rel="icon" href="/src/images/favicon.ico">
-<meta property="og:image" content="/src/images/og-image.png">
+<link rel="apple-touch-icon" href="images/favicon-180.png">
+<link rel="icon" href="images/favicon.ico">
+<meta property="og:image" content="images/og-image.png">
 <meta property="og:title" content="BN HABEEB DATA HUB">
 <meta property="og:description" content="Buy cheap data, airtime and pay bills instantly">
 
@@ -265,7 +265,7 @@ padding:8px;
 font-size:12px;
 }
 
-/* MODAL - FIXED Z-INDEX FOR ANDROID WEBVIEW */
+/* MODAL */
 .modal{
 position:fixed;
 top:0;left:0;width:100%;height:100%;
@@ -298,7 +298,7 @@ margin-top:15px;
 flex:1;
 }
 
-/* RECEIPT STYLES - BN HABEEB GOLD THEME */
+/* RECEIPT STYLES */
 .receiptBox{
 background:linear-gradient(135deg, var(--black), #1a1a1a);
 padding:0;
@@ -481,11 +481,11 @@ padding:8px 16px;
 </div>
 </div>
 
-<!-- RECEIPT MODAL - BN HABEEB -->
+<!-- RECEIPT MODAL - FIXED -->
 <div id="receiptModal" class="modal">
 <div class="receiptBox">
   <div class="receiptHeader">
-    <img src="/src/images/BNHABEEB.png" alt="BNHABEEB">
+    <img src="images/BNHABEEB.png" alt="BNHABEEB">
     <h3>BN HABEEB DATA HUB</h3>
     <small>Transaction Receipt</small>
   </div>
@@ -526,6 +526,7 @@ padding:8px 16px;
       <span class="receiptLabel">Balance After</span>
       <span class="receiptValue" id="rcptBalance">₦0</span>
     </div>
+  </div>
   <div class="receiptFooter">
     Thank you for using BN HABEEB DATA HUB<br>
     Support: 08108871581 | 08117988561
@@ -535,6 +536,8 @@ padding:8px 16px;
     <button onclick="closeModal('receiptModal')" class="dangerBtn" style="margin-top:10px;">Close</button>
   </div>
 </div>
+</div>
+
 <header>
 <div class="logoContainer">
   <img src="images/BNHABEEB.png" alt="Company Logo" id="companyLogo">
@@ -543,37 +546,29 @@ padding:8px 16px;
 <div onclick="showSection('profile')">👤</div>
 </header>
 
-
 <!-- HOME -->
 <section id="home" class="section active">
-
 <h3 id="usernameDisplay"></h3>
-
 <div class="walletCard">
 <p>Wallet Balance</p>
 <strong id="walletBalance">₦0</strong>
 </div>
-
 <div class="adminWalletCard adminOnly">
 <p>Admin Profit Wallet</p>
 <strong id="adminWalletBalance">₦0</strong>
 </div>
-
 <div class="quickActions">
 <div class="quickCard" onclick="showSection('data')">📶 Buy Data</div>
 <div class="quickCard" onclick="showSection('airtime')">📞 Buy Airtime</div>
 <div class="quickCard" onclick="showSection('fund')">💰 Fund Wallet</div>
 <div class="quickCard adminOnly" onclick="showSection('profitDashboard')">📊 Profit</div>
 </div>
-
 <div id="transactionHistory"></div>
-
 </section>
 
 <!-- FUND -->
 <section id="fund" class="section">
 <h3>Fund Wallet</h3>
-
 <div class="walletCard">
 <p id="bankName">Bank Name</p>
 <strong id="accountNumber">0000000000</strong>
@@ -581,7 +576,6 @@ padding:8px 16px;
 <button onclick="copyAccount()">Copy Account Number</button>
 <button id="generateAccountBtn" onclick="generateAccount()" class="warningBtn" style="display:none">Generate Account Number</button>
 </div>
-
 <button onclick="openFundModal()">💳 Fund via Paystack</button>
 <button onclick="showSection('home')">⬅ Back</button>
 </section>
@@ -591,11 +585,10 @@ padding:8px 16px;
 <button onclick="showSection('home')">⬅ Back</button>
 <h3>Select Network</h3>
 <div class="networkGrid">
-<div class="networkItem" onclick="selectNetwork('mtn', this)"><img src="images/mtn.png1" alt="MTN"></div>
-<div class="networkItem" onclick="selectNetwork('glo', this)"><img src="images/glo.png1" alt="GLO"></div>
-<div class="networkItem" onclick="selectNetwork('airtel', this)"><img src="images/airtel.png1" alt="AIRTEL"></div>
+<div class="networkItem" onclick="selectNetwork('mtn', this)"><img src="images/mtn.png" alt="MTN"></div>
+<div class="networkItem" onclick="selectNetwork('glo', this)"><img src="images/glo.png" alt="GLO"></div>
+<div class="networkItem" onclick="selectNetwork('airtel', this)"><img src="images/airtel.png" alt="AIRTEL"></div>
 </div>
-
 <input id="dataPhone" type="tel" placeholder="Phone Number">
 <div id="planList"></div>
 </section>
@@ -604,13 +597,11 @@ padding:8px 16px;
 <section id="airtime" class="section">
 <button onclick="showSection('home')">⬅ Back</button>
 <h3>Select Network</h3>
-
 <div class="networkGrid">
-<div class="networkItem airtimeNet" onclick="selectAirtimeNetwork('mtn', this)"><img src="images/mtn.png1" alt="MTN"></div>
-<div class="networkItem airtimeNet" onclick="selectAirtimeNetwork('glo', this)"><img src="images/glo.png1" alt="GLO"></div>
-<div class="networkItem airtimeNet" onclick="selectAirtimeNetwork('airtel', this)"><img src="images/airtel.png1" alt="AIRTEL"></div>
+<div class="networkItem airtimeNet" onclick="selectAirtimeNetwork('mtn', this)"><img src="images/mtn.png" alt="MTN"></div>
+<div class="networkItem airtimeNet" onclick="selectAirtimeNetwork('glo', this)"><img src="images/glo.png" alt="GLO"></div>
+<div class="networkItem airtimeNet" onclick="selectAirtimeNetwork('airtel', this)"><img src="images/airtel.png" alt="AIRTEL"></div>
 </div>
-
 <input id="airtimePhone" type="tel" placeholder="Phone Number">
 <input id="airtimeAmount" type="number" placeholder="Amount">
 <button onclick="openAirtimePin()">Buy Airtime</button>
@@ -627,12 +618,10 @@ padding:8px 16px;
 <section id="profitDashboard" class="section adminOnly">
 <button onclick="showSection('home')">⬅ Back</button>
 <h3>📊 Profit Dashboard</h3>
-
 <div class="adminSection">
   <strong>Total Profit: <span id="totalProfit">₦0</span></strong><br>
   <strong>Admin Wallet: <span id="adminWalletBalance2">₦0</span></strong>
 </div>
-
 <div class="adminSection">
   <input type="date" id="profitFrom">
   <input type="date" id="profitTo">
@@ -645,7 +634,6 @@ padding:8px 16px;
 <section id="topUsersManager" class="section adminOnly">
 <button onclick="showSection('profile')">⬅ Back</button>
 <h3>🔥 Top Users Manager</h3>
-
 <div class="adminSection">
   <input id="topUserEmail" type="email" placeholder="User Email">
   <button onclick="addTopUser()" class="successBtn">Add Top User</button>
@@ -657,11 +645,9 @@ padding:8px 16px;
 <section id="plansManager" class="section adminOnly">
 <button onclick="showSection('profile')">⬅ Back</button>
 <h3>📱 Plans Manager</h3>
-
 <div class="adminSection">
   <button onclick="openModal('addPlanModal')" class="successBtn">+ Add New Plan</button>
 </div>
-
 <div class="adminSection">
   <h4>All Plans</h4>
   <div id="adminPlansList"></div>
@@ -672,7 +658,6 @@ padding:8px 16px;
 <section id="usersManager" class="section adminOnly">
 <button onclick="showSection('profile')">⬅ Back</button>
 <h3>👥 Users Manager</h3>
-
 <div class="adminSection">
   <input id="userSearch" placeholder="Search username or email" oninput="loadAdminUsers()">
   <div id="adminUsersList"></div>
@@ -683,7 +668,6 @@ padding:8px 16px;
 <section id="withdrawals" class="section adminOnly">
 <button onclick="showSection('profile')">⬅ Back</button>
 <h3>💸 Admin Withdrawals</h3>
-
 <div class="adminSection">
   <input id="withdrawAmount" type="number" placeholder="Amount">
   <input id="withdrawBank" placeholder="Bank Name">
@@ -691,7 +675,6 @@ padding:8px 16px;
   <input id="withdrawAccountName" placeholder="Account Name">
   <button onclick="requestWithdrawal()" class="primaryBtn">Request Withdrawal</button>
 </div>
-
 <div class="adminSection">
   <h4>Withdrawal History</h4>
   <div id="withdrawalsList"></div>
@@ -701,7 +684,6 @@ padding:8px 16px;
 <!-- PROFILE -->
 <section id="profile" class="section">
 <button onclick="showSection('home')">⬅ Back</button>
-
 <div class="adminSection" style="background:var(--card);">
   <h3>Security</h3>
   <div id="biometricSection">
@@ -710,12 +692,10 @@ padding:8px 16px;
     <button id="biometricLoginBtn" onclick="loginWithBiometric()" style="display:none">🫆 Login with Fingerprint</button>
   </div>
 </div>
-
 <button onclick="openModal('passwordModal')">Change Password</button>
 <button onclick="openModal('pinModalBox')">Change PIN</button>
 <button onclick="logout()">Logout</button>
 
-<!-- ADMIN PANEL -->
 <div class="adminOnly">
 <h3>Admin Tools</h3>
 <button onclick="showSection('profitDashboard')">📊 Profit Dashboard</button>
@@ -723,9 +703,7 @@ padding:8px 16px;
 <button onclick="showSection('usersManager')">👥 Users Manager</button>
 <button onclick="showSection('topUsersManager')">🔥 Top Users Manager</button>
 <button onclick="showSection('withdrawals')">💸 Withdrawals</button>
-
 <hr>
-
 <h3>Transaction Reversal</h3>
 <input id="reverseRef" placeholder="Transaction Reference">
 <button onclick="reverseTransaction()" class="dangerBtn">Reverse Transaction</button>
@@ -736,12 +714,11 @@ padding:8px 16px;
 <a href="https://wa.me/2348108871581" target="_blank">📞 Support (08108871581)</a>
 <a href="https://wa.me/2348117988561" target="_blank">👨‍💻 Developer (08117988561)</a>
 <p>© BNHABEEB DATA HUB</p>
-<p> DEVELOPED BY MAYCONNECT TECHNOLOGIES NIG LTD</p>
+<p>DEVELOPED BY MAYCONNECT TECHNOLOGIES NIG LTD</p>
 </div>
-
 </section>
 
-<!-- PIN MODAL - BNHABEEB + BIOMETRIC -->
+<!-- PIN MODAL -->
 <div id="pinModal" class="modal">
   <div class="modalBox">
     <h3 id="pinModalTitle">Enter PIN</h3>
@@ -815,44 +792,6 @@ if ('serviceWorker' in navigator) {
       .then(reg => console.log('SW registered'))
       .catch(err => console.log('SW failed:', err));
   });
-}
-
-// RECEIPT FUNCTIONS - ADD TO YOUR app.js
-function showReceipt(data) {
-  document.getElementById('rcptRef').textContent = data.reference || '-';
-  document.getElementById('rcptDate').textContent = new Date(data.created_at || Date.now()).toLocaleString();
-  document.getElementById('rcptService').textContent = data.type || 'Data';
-  document.getElementById('rcptNetwork').textContent = data.network || '-';
-  document.getElementById('rcptPhone').textContent = data.phone || '-';
-  document.getElementById('rcptPlan').textContent = data.plan_name || data.amount || '-';
-  document.getElementById('rcptAmount').textContent = '₦' + (data.amount || 0);
-  
-  const statusEl = document.getElementById('rcptStatus');
-  statusEl.textContent = data.status || 'Success';
-  statusEl.className = 'receiptValue ' + 
-    (data.status === 'success' ? 'statusSuccess' : 
-     data.status === 'failed' ? 'statusFailed' : 'statusPending');
-  
-  document.getElementById('rcptBalance').textContent = '₦' + (data.balance_after || 0);
-  openModal('receiptModal');
-}
-
-function shareReceipt() {
-  const ref = document.getElementById('rcptRef').textContent;
-  const network = document.getElementById('rcptNetwork').textContent;
-  const phone = document.getElementById('rcptPhone').textContent;
-  const plan = document.getElementById('rcptPlan').textContent;
-  const amount = document.getElementById('rcptAmount').textContent;
-  const status = document.getElementById('rcptStatus').textContent;
-  
-  const text = `*BN HABEEB DATA HUB RECEIPT*\n\nRef: ${ref}\nNetwork: ${network}\nPhone: ${phone}\nPlan: ${plan}\nAmount: ${amount}\nStatus: ${status}\n\nThank you!`;
-  
-  if (navigator.share) {
-    navigator.share({text: text});
-  } else {
-    navigator.clipboard.writeText(text);
-    showMsg('Receipt copied to clipboard');
-  }
 }
 </script>
 
