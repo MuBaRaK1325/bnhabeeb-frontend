@@ -773,7 +773,344 @@ async function loadProfitDashboard() {
   }
 }
 
+/* ================= ADMIN: TOP USERS ================= */
+async function loadTopUsers() {
+  try {
+    const res = await fetch(API + "/admin/top-users", {
+      headers: { Authorization: "Bearer " + getToken() }
+    });
+    const users = await res.json();
+    const list = el("topUsersList");
+    if (list) {
+      list.innerHTML = "";
+      users.forEach(u => {
+        list.innerHTML += `<div class="userCard">
+          <strong>${u.username}</strong> - ${u.email}<br>
+          Spent: ${formatNaira(u.total_spent)} | Profit: ${formatNaira(u.total_profit_generated)}
+          <button onclick="removeTopUser('${u.email}')" class="dangerBtn">Remove</button>
+        </div>`;
+      });
+    }
+  } catch {}
+}
 
+async function addTopUser() {
+  const email = el("topUserEmail")?.value;
+  if (!email) return showMsg("Enter email", "error");
+
+  showLoader("Adding top user...");
+  try {
+    const res = await fetch(API + "/admin/top-users/add", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Authorization: "Bearer " + getToken() },
+      body: JSON.stringify({ email })
+    });
+    const data = await res.json();
+    hideLoader();
+    showMsg(data.message, res.ok? "success" : "error");
+    if (res.ok) {
+      loadTopUsers();
+      loadAdminUsers();
+      loadRegularUsers();
+    }
+  } catch {
+    hideLoader();
+    showMsg("Server error", "error");
+  }
+}
+
+async function removeTopUser(email) {
+  showLoader("Removing...");
+  try {
+    const res = await fetch(API + "/admin/top-users/remove", {
+      method: "DELETE",
+      headers: { "Content-Type": "application/json", Authorization: "Bearer " + getToken() },
+      body: JSON.stringify({ email })
+    });
+    const data = await res.json();
+    hideLoader();
+    showMsg(data.message, res.ok? "success" : "error");
+    if (res.ok) {
+      loadTopUsers();
+      loadAdminUsers();
+    }
+  } catch {
+    hideLoader();
+    showMsg("Server error", "error");
+  }
+}
+
+/* ================= ADMIN: REGULAR USERS ================= */
+async function loadRegularUsers() {
+  try {
+    const res = await fetch(API + "/admin/regular-users", {
+      headers: { Authorization: "Bearer " + getToken() }
+    });
+    const users = await res.json();
+    const list = el("regularUsersList");
+    if (list) {
+      list.innerHTML = "";
+      users.forEach(u => {
+        list.innerHTML += `<div class="userCard">
+          <strong>${u.username}</strong> - ${u.email}<br>
+          Spent: ${formatNaira(u.total_spent)} | Profit: ${formatNaira(u.total_profit_generated)}
+          <button onclick="removeRegularUser('${u.email}')" class="dangerBtn">Remove</button>
+        </div>`;
+      });
+    }
+  } catch {}
+}
+
+async function addRegularUser() {
+  const email = el("regularUserEmail")?.value;
+  if (!email) return showMsg("Enter email", "error");
+
+  showLoader("Adding regular user...");
+  try {
+    const res = await fetch(API + "/admin/regular-users/add", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Authorization: "Bearer " + getToken() },
+      body: JSON.stringify({ email })
+    });
+    const data = await res.json();
+    hideLoader();
+    showMsg(data.message, res.ok? "success" : "error");
+    if (res.ok) {
+      loadRegularUsers();
+      loadAdminUsers();
+      loadTopUsers();
+    }
+  } catch {
+    hideLoader();
+    showMsg("Server error", "error");
+  }
+}
+
+async function removeRegularUser(email) {
+  showLoader("Removing...");
+  try {
+    const res = await fetch(API + "/admin/regular-users/remove", {
+      method: "DELETE",
+      headers: { "Content-Type": "application/json", Authorization: "Bearer " + getToken() },
+      body: JSON.stringify({ email })
+    });
+    const data = await res.json();
+    hideLoader();
+    showMsg(data.message, res.ok? "success" : "error");
+    if (res.ok) {
+      loadRegularUsers();
+      loadAdminUsers();
+    }
+  } catch {
+    hideLoader();
+    showMsg("Server error", "error");
+  }
+}
+
+/* ================= ADMIN: PLANS MANAGER ================= */
+async function loadAdminPlans() {
+  try {
+    const res = await fetch(API + "/admin/plans", {
+      headers: { Authorization: "Bearer " + getToken() }
+    });
+    const plans = await res.json();
+    cachedAdminPlans = plans;
+    const list = el("adminPlansList");
+    if (list) {
+      list.innerHTML = "";
+      plans.forEach(p => {
+        const statusColor = p.is_active? "#00c853" : "#ff4d4d";
+        const restrictBadge = p.restricted? `<span class="badge badgeWarning">RESTRICTED</span>` : '';
+        const providerBadge = p.provider? `<span class="badge">${p.provider.toUpperCase()}</span>` : '';
+        list.innerHTML += `<div class="planCard">
+          <strong>${p.name}</strong> - ${p.network} ${restrictBadge} ${providerBadge}<br>
+          Default: ${formatNaira(p.price)} | Regular: ${formatNaira(p.regular_price)} | Top: ${formatNaira(p.top_price)} | Cost: ${formatNaira(p.cost)}<br>
+          Provider: ${p.provider || 'N/A'} | Net ID: ${p.network_id || 'N/A'} | API ID: ${p.api_plan_id || 'N/A'}<br>
+          <span style="color:${statusColor}">${p.is_active? 'Active' : 'Disabled'}</span>
+          <button onclick="editPlan(${p.id})" class="primaryBtn">Edit</button>
+          <button onclick="togglePlan(${p.id}, ${!p.is_active})" class="dangerBtn">${p.is_active? 'Disable' : 'Enable'}</button>
+        </div>`;
+      });
+    }
+  } catch {}
+}
+
+async function addPlan() {
+  const plan = {
+    plan_id: el("newPlanId")?.value,
+    network: el("newPlanNetwork")?.value,
+    name: el("newPlanName")?.value,
+    price: el("newPlanPrice")?.value,
+    regular_price: el("newPlanRegularPrice")?.value,
+    top_price: el("newPlanTopPrice")?.value,
+    cost: el("newPlanCost")?.value,
+    validity: el("newPlanValidity")?.value,
+    restricted: el("newPlanRestricted")?.checked,
+    provider: el("newPlanProvider")?.value,
+    network_id: el("newPlanNetworkId")?.value,
+    api_plan_id: el("newPlanApiId")?.value
+  };
+
+  if (!plan.plan_id ||!plan.network ||!plan.name ||!plan.price ||!plan.cost ||!plan.provider ||!plan.network_id ||!plan.api_plan_id) {
+    return showMsg("Fill all required fields including provider details", "error");
+  }
+
+  showLoader("Adding plan...");
+  try {
+    const res = await fetch(API + "/admin/plans", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Authorization: "Bearer " + getToken() },
+      body: JSON.stringify(plan)
+    });
+    const data = await res.json();
+    hideLoader();
+    showMsg(data.message, res.ok? "success" : "error");
+    if (res.ok) {
+      loadAdminPlans();
+      loadPlans();
+      ["newPlanId","newPlanName","newPlanPrice","newPlanRegularPrice","newPlanTopPrice","newPlanCost","newPlanValidity","newPlanProvider","newPlanNetworkId","newPlanApiId"].forEach(id => {
+        if (el(id)) el(id).value = "";
+      });
+      if (el("newPlanRestricted")) el("newPlanRestricted").checked = false;
+    }
+  } catch {
+    hideLoader();
+    showMsg("Server error", "error");
+  }
+}
+
+async function togglePlan(id, is_active) {
+  showLoader("Updating...");
+  try {
+    const res = await fetch(`${API}/admin/plans/${id}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json", Authorization: "Bearer " + getToken() },
+      body: JSON.stringify({ is_active })
+    });
+    const data = await res.json();
+    hideLoader();
+    showMsg(data.message, res.ok? "success" : "error");
+    if (res.ok) {
+      loadAdminPlans();
+      loadPlans();
+    }
+  } catch {
+    hideLoader();
+    showMsg("Server error", "error");
+  }
+}
+
+async function editPlan(id) {
+  const plan = cachedAdminPlans.find(p => p.id === id);
+  if (!plan) return showMsg("Plan not found", "error");
+
+  editingPlanId = id;
+
+  if (el("editPlanName")) el("editPlanName").value = plan.name || "";
+  if (el("editPlanPrice")) el("editPlanPrice").value = plan.price || "";
+  if (el("editPlanRegularPrice")) el("editPlanRegularPrice").value = plan.regular_price || "";
+  if (el("editPlanTopPrice")) el("editPlanTopPrice").value = plan.top_price || "";
+  if (el("editPlanCost")) el("editPlanCost").value = plan.cost || "";
+  if (el("editPlanValidity")) el("editPlanValidity").value = plan.validity || "";
+  if (el("editPlanRestricted")) el("editPlanRestricted").checked = plan.restricted || false;
+  if (el("editPlanProvider")) el("editPlanProvider").value = plan.provider || "";
+  if (el("editPlanNetworkId")) el("editPlanNetworkId").value = plan.network_id || "";
+  if (el("editPlanApiId")) el("editPlanApiId").value = plan.api_plan_id || "";
+  if (el("editPlanActive")) el("editPlanActive").checked = plan.is_active!== false;
+
+  openModal("editPlanModal");
+}
+
+async function savePlanEdit() {
+  if (!editingPlanId) return;
+
+  const updated = {
+    name: el("editPlanName")?.value,
+    price: el("editPlanPrice")?.value,
+    regular_price: el("editPlanRegularPrice")?.value,
+    top_price: el("editPlanTopPrice")?.value,
+    cost: el("editPlanCost")?.value,
+    validity: el("editPlanValidity")?.value,
+    restricted: el("editPlanRestricted")?.checked,
+    provider: el("editPlanProvider")?.value,
+    network_id: el("editPlanNetworkId")?.value,
+    api_plan_id: el("editPlanApiId")?.value,
+    is_active: el("editPlanActive")?.checked
+  };
+
+  if (!updated.name ||!updated.price ||!updated.cost ||!updated.provider ||!updated.network_id ||!updated.api_plan_id) {
+    return showMsg("Name, Price, Cost, Provider, Network ID and API Plan ID are required", "error");
+  }
+
+  showLoader("Updating plan...");
+  try {
+    const res = await fetch(`${API}/admin/plans/${editingPlanId}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json", Authorization: "Bearer " + getToken() },
+      body: JSON.stringify(updated)
+    });
+    const data = await res.json();
+    hideLoader();
+    closeModal("editPlanModal");
+    showMsg(data.message, res.ok? "success" : "error");
+    if (res.ok) {
+      loadAdminPlans();
+      loadPlans();
+    }
+  } catch {
+    hideLoader();
+    showMsg("Server error", "error");
+  }
+}
+
+/* ================= ADMIN: USERS MANAGER ================= */
+async function loadAdminUsers() {
+  const search = el("userSearch")?.value || "";
+  try {
+    const res = await fetch(`${API}/admin/users?search=${search}`, {
+      headers: { Authorization: "Bearer " + getToken() }
+    });
+    const users = await res.json();
+    const list = el("adminUsersList");
+    if (list) {
+      list.innerHTML = "";
+      users.forEach(u => {
+        const tierBadge = `<span class="badge ${u.user_tier}">${u.user_tier.toUpperCase()}</span>`;
+        list.innerHTML += `<div class="userCard">
+          <strong>${u.username}</strong> - ${u.email} ${tierBadge}<br>
+          Wallet: ${formatNaira(u.wallet_balance)} | Phone: ${u.phone || 'N/A'}<br>
+          <select onchange="setUserTier(${u.id}, this.value)" class="tierSelect">
+            <option value="default" ${u.user_tier === 'default'? 'selected' : ''}>Default</option>
+            <option value="regular" ${u.user_tier === 'regular'? 'selected' : ''}>Regular</option>
+            <option value="top" ${u.user_tier === 'top'? 'selected' : ''}>Top</option>
+          </select>
+        </div>`;
+      });
+    }
+  } catch {}
+}
+
+async function setUserTier(id, tier) {
+  showLoader("Updating tier...");
+  try {
+    const res = await fetch(`${API}/admin/users/set-tier`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Authorization: "Bearer " + getToken() },
+      body: JSON.stringify({ user_id: id, tier })
+    });
+    const data = await res.json();
+    hideLoader();
+    showMsg(data.message || "Tier updated", res.ok? "success" : "error");
+    if (res.ok) {
+      loadAdminUsers();
+      loadTopUsers();
+      loadRegularUsers();
+    }
+  } catch {
+    hideLoader();
+    showMsg("Server error", "error");
+  }
+}
 
 /* ================= ADMIN: WITHDRAWALS ================= */
 
