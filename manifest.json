@@ -1,37 +1,55 @@
 {
   "name": "BN HABEEB DATA HUB",
   "short_name": "BNHABEEB",
-  "start_url": "/dashboard.html",
+  "id": "/?source=pwa",
+  "start_url": "/",
   "scope": "/",
   "display": "standalone",
-  "background_color": "#000000",
-  "theme_color": "#FFD700",
-  "description": "Buy cheap data, airtime and pay bills instantly",
   "orientation": "portrait-primary",
+  "background_color": "#0a1a1a",
+  "theme_color": "#14B8A6",
+  "description": "Cheap, Affordable, Fast Data, Airtime & Bills Payment",
+  "categories": ["finance", "shopping", "utilities"],
+  "lang": "en",
+  "dir": "ltr",
   "icons": [
     {
-      "src": "/src/images/favicon-192.png",
+      "src": "/images/BNHABEEB-72.png",
+      "sizes": "72x72",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/images/BNHABEEB-192.png",
       "sizes": "192x192",
       "type": "image/png",
       "purpose": "any"
     },
     {
-      "src": "//images/favicon-512.png",
+      "src": "/images/BNHABEEB-512.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any"
     },
     {
-      "src": "/src/images/favicon-192.png",
+      "src": "/images/BNHABEEB-192.png",
       "sizes": "192x192",
       "type": "image/png",
       "purpose": "maskable"
     },
     {
-      "src": "/src/images/favicon-512.png",
+      "src": "/images/BNHABEEB-512.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "maskable"
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "/images/screenshot-mobile.png",
+      "sizes": "540x720",
+      "type": "image/png",
+      "form_factor": "narrow"
     }
   ]
 }
