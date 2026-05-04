@@ -7,38 +7,39 @@
 
 <!-- PWA TAGS -->
 <link rel="manifest" href="/manifest.json">
-<meta name="theme-color" content="#FFD700">
+<meta name="theme-color" content="#14B8A6">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="BNHABEEB">
-<link rel="apple-touch-icon" href="images/favicon-180.png">
-<link rel="icon" href="images/favicon.ico">
-<meta property="og:image" content="images/og-image.png">
-<meta property="og:title" content="BN HABEEB DATA HUB">
-<meta property="og:description" content="Buy cheap data, airtime and pay bills instantly">
+<link rel="apple-touch-icon" href="/images/BNHABEEB-192.png">
+<link rel="icon" href="/images/BNHABEEB.png">
+<script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
 
 <style>
 :root{
---primary:#FFD700;
---bg:#000000;
---card:#1a1a1a;
---accent:#FFE55C;
+--primary:#14B8A6;
+--bg:#0a1a1a;
+--bg2:#102d2d;
+--card:rgba(255, 255, 255, 0.1);
+--accent:#14B8A6;
 --success:#00c853;
 --danger:#ff4d4d;
 --warning:#ffa000;
---gold:#FFD700;
---black:#000000;
+--glass-border:rgba(255, 255, 255, 0.2);
+--text-muted:rgba(255, 255, 255, 0.7);
 }
 
 *{box-sizing:border-box}
 body{
 margin:0;
-background:var(--bg);
+background:linear-gradient(135deg, var(--bg), var(--bg2));
 color:white;
-font-family:Arial;
+font-family:system-ui, -apple-system, sans-serif;
 padding-bottom:120px;
 -webkit-tap-highlight-color:transparent;
+min-height:100vh;
 }
 
 /* HEADER */
@@ -48,7 +49,8 @@ justify-content:space-between;
 align-items:center;
 padding:15px;
 background:var(--card);
-border-bottom:2px solid var(--primary);
+backdrop-filter:blur(10px);
+border-bottom:1px solid var(--glass-border);
 }
 
 .logoContainer{
@@ -63,11 +65,12 @@ width:40px;
 border-radius:50%;
 border:2px solid var(--primary);
 object-fit:cover;
+box-shadow:0 0 20px rgba(20, 184, 166, 0.4);
 }
 
 .companyBadge{
 background:var(--primary);
-color:var(--black);
+color:white;
 padding:4px 8px;
 border-radius:6px;
 font-size:12px;
@@ -80,8 +83,8 @@ margin:20px;
 padding:20px;
 border-radius:16px;
 text-align:center;
-background:linear-gradient(135deg,var(--black),var(--primary));
-border:1px solid var(--primary);
+background:linear-gradient(135deg,var(--primary),var(--bg2));
+box-shadow:0 8px 32px rgba(0, 0, 0, 0.4);
 }
 
 .adminWalletCard{
@@ -89,8 +92,9 @@ margin:20px;
 padding:15px;
 border-radius:12px;
 text-align:center;
-background:linear-gradient(135deg,#0f1735,#1a237e);
-border:1px solid var(--primary);
+background:var(--card);
+backdrop-filter:blur(10px);
+border:1px solid var(--glass-border);
 }
 
 /* QUICK */
@@ -103,14 +107,15 @@ margin:20px;
 
 .quickCard{
 background:var(--card);
+backdrop-filter:blur(10px);
+border:1px solid var(--glass-border);
 padding:15px;
 border-radius:12px;
 text-align:center;
 cursor:pointer;
 transition:0.2s;
-border:1px solid #333;
 }
-.quickCard:active{transform:scale(0.97);border-color:var(--primary);}
+.quickCard:active{transform:scale(0.97);}
 
 /* SECTION */
 .section{display:none;padding:20px;}
@@ -121,12 +126,18 @@ width:100%;
 padding:12px;
 margin-top:10px;
 border-radius:8px;
-border:1px solid #333;
-background:#111;
+border:1px solid var(--glass-border);
+background:rgba(255, 255, 255, 0.1);
 color:white;
 font-size:16px;
+backdrop-filter:blur(10px);
 }
-input:focus,select:focus{border-color:var(--primary);outline:none;}
+input::placeholder{color:var(--text-muted);}
+input:focus,select:focus{
+outline:none;
+border-color:var(--primary);
+background:rgba(255, 255, 255, 0.15);
+}
 
 label{
 display:block;
@@ -141,18 +152,28 @@ background:var(--primary);
 border:none;
 padding:12px;
 border-radius:10px;
-color:var(--black);
+color:white;
 margin-top:10px;
 width:100%;
 cursor:pointer;
 font-weight:bold;
 font-size:16px;
+transition:all 0.2s;
 }
-.primaryBtn{background:var(--primary);color:var(--black);}
-.dangerBtn{background:var(--danger);color:white;}
-.successBtn{background:var(--success);color:white;}
-.warningBtn{background:var(--warning);color:var(--black);}
+button:hover{transform:translateY(-2px);}
+.primaryBtn{background:var(--primary);}
+.dangerBtn{background:var(--danger);}
+.successBtn{background:var(--success);}
+.warningBtn{background:var(--warning);color:var(--bg);}
 button:disabled{opacity:0.5;cursor:not-allowed;}
+
+.backBtn{
+width:auto !important;
+background:transparent !important;
+border:1px solid var(--primary) !important;
+padding:8px 16px !important;
+margin-bottom:15px;
+}
 
 /* NETWORK */
 .networkGrid{
@@ -164,6 +185,8 @@ margin-top:15px;
 
 .networkItem{
 background:var(--card);
+backdrop-filter:blur(10px);
+border:1px solid var(--glass-border);
 padding:12px;
 border-radius:50%;
 text-align:center;
@@ -179,6 +202,7 @@ transition:0.2s;
 .networkItem.active{
 border:3px solid var(--primary);
 transform:scale(1.05);
+box-shadow:0 0 20px rgba(20, 184, 166, 0.4);
 }
 
 .networkItem img{
@@ -191,15 +215,16 @@ object-fit:cover;
 /* PLAN */
 .planItem{
 background:var(--card);
+backdrop-filter:blur(10px);
+border:1px solid var(--glass-border);
 padding:12px;
 border-radius:10px;
 margin-top:10px;
 cursor:pointer;
 position:relative;
 transition:0.2s;
-border:1px solid #333;
 }
-.planItem:active{background:#222;border-color:var(--primary);}
+.planItem:active{background:rgba(255, 255, 255, 0.2);}
 
 .topUserBadge{
 position:absolute;
@@ -214,19 +239,60 @@ font-size:10px;
 /* TRANSACTION */
 .transactionCard{
 background:var(--card);
+backdrop-filter:blur(10px);
+border:1px solid var(--glass-border);
 padding:12px;
 border-radius:10px;
 margin-top:10px;
-border:1px solid #333;
 cursor:pointer;
 }
 
 .userCard, .withdrawCard, .planCard{
 background:var(--card);
+backdrop-filter:blur(10px);
+border:1px solid var(--glass-border);
 padding:12px;
 border-radius:10px;
 margin-top:10px;
-border:1px solid #333;
+}
+
+/* ADMIN */
+.adminSection{
+background:var(--card);
+backdrop-filter:blur(10px);
+border:1px solid var(--glass-border);
+padding:15px;
+border-radius:10px;
+margin-top:15px;
+}
+
+.adminSection h4{
+margin:0 0 12px 0;
+color:var(--primary);
+font-size:16px;
+}
+
+.inputField, #withdrawAmount, #withdrawBank, #withdrawAccountNumber, #withdrawAccountName{
+width:100%;
+padding:12px;
+margin:8px 0;
+border:1px solid var(--glass-border);
+border-radius:8px;
+background:rgba(255, 255, 255, 0.1);
+color:white;
+font-size:14px;
+box-sizing:border-box;
+}
+
+.inputField:focus, #withdrawAmount:focus, #withdrawBank:focus, #withdrawAccountNumber:focus, #withdrawAccountName:focus{
+outline:none;
+border:1px solid var(--primary);
+background:rgba(255, 255, 255, 0.15);
+}
+
+.listContainer{
+max-height:500px;
+overflow-y:auto;
 }
 
 /* TABLE */
@@ -235,15 +301,16 @@ width:100%;
 border-collapse:collapse;
 margin-top:15px;
 background:var(--card);
+backdrop-filter:blur(10px);
 border-radius:8px;
 overflow:hidden;
 }
 th,td{
 padding:10px;
 text-align:left;
-border-bottom:1px solid #333;
+border-bottom:1px solid rgba(255, 255, 255, 0.1);
 }
-th{background:#111;color:var(--primary);}
+th{background:rgba(20, 184, 166, 0.3);}
 
 /* NAV */
 .bottomNav{
@@ -251,10 +318,11 @@ position:fixed;
 bottom:0;
 width:100%;
 background:var(--card);
+backdrop-filter:blur(10px);
+border-top:1px solid var(--glass-border);
 display:flex;
 justify-content:space-around;
 padding:8px 0;
-border-top:2px solid var(--primary);
 z-index:999;
 }
 
@@ -277,7 +345,8 @@ z-index:99999;
 }
 
 .modalBox{
-background:var(--card);
+background:linear-gradient(135deg, var(--bg), var(--bg2));
+border:1px solid var(--glass-border);
 padding:20px;
 border-radius:12px;
 width:85%;
@@ -285,7 +354,7 @@ max-width:400px;
 max-height:80vh;
 overflow-y:auto;
 text-align:center;
-border:2px solid var(--primary);
+box-shadow:0 8px 32px rgba(0, 0, 0, 0.6);
 }
 
 .modal-buttons{
@@ -298,73 +367,15 @@ margin-top:15px;
 flex:1;
 }
 
-/* RECEIPT STYLES */
-.receiptBox{
-background:linear-gradient(135deg, var(--black), #1a1a1a);
-padding:0;
-border-radius:12px;
-width:90%;
-max-width:380px;
-text-align:left;
-border:2px solid var(--primary);
-overflow:hidden;
-}
-.receiptHeader{
-background:var(--primary);
-color:var(--black);
-padding:15px;
-text-align:center;
-}
-.receiptHeader img{
-width:50px;
-height:50px;
-border-radius:50%;
-border:2px solid var(--black);
-}
-.receiptHeader h3{
-margin:8px 0 0 0;
-font-size:18px;
-}
-.receiptBody{
-padding:20px;
-}
-.receiptRow{
-display:flex;
-justify-content:space-between;
-padding:10px 0;
-border-bottom:1px dashed #333;
-font-size:14px;
-}
-.receiptRow:last-child{border:none;}
-.receiptLabel{opacity:0.7;}
-.receiptValue{font-weight:bold;color:var(--primary);}
-.statusSuccess{color:var(--success);}
-.statusFailed{color:var(--danger);}
-.statusPending{color:var(--warning);}
-.receiptFooter{
-background:#111;
-padding:12px;
-text-align:center;
-font-size:11px;
-opacity:0.6;
-}
-
 /* ADMIN */
 .adminOnly{
 display:none;
-background:#111;
+background:var(--card);
+backdrop-filter:blur(10px);
+border:1px solid var(--glass-border);
 padding:15px;
 border-radius:10px;
 margin-top:20px;
-border:1px solid var(--primary);
-}
-
-.adminSection{
-background:#0d0d0d;
-padding:15px;
-border-radius:10px;
-margin-top:15px;
-border:1px solid #333;
 }
 
 .badge{
@@ -373,23 +384,59 @@ border-radius:4px;
 font-size:11px;
 font-weight:bold;
 }
-.badgeSuccess{background:var(--success);color:white;}
-.badgeDanger{background:var(--danger);color:white;}
-.badgeWarning{background:var(--warning);color:var(--black);}
+.badgeSuccess{background:var(--success);}
+.badgeDanger{background:var(--danger);}
+.badgeWarning{background:var(--warning);color:var(--bg);}
 
 /* FOOTER */
 .footer{
 text-align:center;
 font-size:14px;
 margin-top:30px;
-opacity:0.9;
+padding:25px 20px;
+background:var(--card);
+backdrop-filter:blur(10px);
+border-top:2px solid var(--primary);
+}
+
+.footer p{
+margin:8px 0;
+font-size:13px;
+color:#ddd;
 }
 
 .footer a{
 color:var(--primary);
 text-decoration:none;
 display:block;
-margin-top:8px;
+margin:8px 0;
+font-weight:500;
+transition:0.2s;
+}
+
+.footer a:hover{
+color:var(--accent);
+}
+
+.channelLink{
+margin:18px 0;
+}
+
+.channelLink a{
+background:linear-gradient(135deg,var(--primary),var(--bg2));
+color:white !important;
+padding:12px 24px;
+border-radius:25px;
+display:inline-block;
+font-weight:600;
+text-decoration:none !important;
+box-shadow:0 4px 12px rgba(20, 184, 166, 0.4);
+transition:0.3s;
+}
+
+.channelLink a:hover{
+transform:translateY(-2px);
+box-shadow:0 6px 16px rgba(20, 184, 166, 0.6);
 }
 
 /* INSTALL BANNER */
@@ -400,7 +447,7 @@ bottom:70px;
 left:0;
 right:0;
 background:var(--primary);
-color:var(--black);
+color:#fff;
 padding:16px;
 text-align:center;
 z-index:9998;
@@ -410,6 +457,28 @@ box-shadow:0 -2px 10px rgba(0,0,0,0.3);
 width:auto;
 margin:0 5px;
 padding:8px 16px;
+}
+
+/* RECEIPT MODAL - FIXED FOR ANDROID */
+#receiptModal{
+display:none;
+position:fixed;
+inset:0;
+background:rgba(0,0,0,0.7);
+backdrop-filter:blur(8px);
+z-index:99999;
+align-items:center;
+justify-content:center;
+padding:1rem;
+}
+
+.receiptBox{
+background:linear-gradient(135deg, #0a1a1a, #102d2d);
+border-radius:24px;
+max-width:28rem;
+width:100%;
+border:1px solid rgba(20,184,166,0.4);
+box-shadow:0 0 40px rgba(20,184,166,0.3);
 }
 </style>
 </head>
@@ -428,7 +497,8 @@ padding:8px 16px;
     <option value="9MOBILE">9MOBILE</option>
   </select>
   <input id="newPlanName" placeholder="Plan Name e.g 1GB SME" />
-  <input id="newPlanPrice" type="number" step="0.01" placeholder="Selling Price" />
+  <input id="newPlanPrice" type="number" step="0.01" placeholder="Default Price" />
+  <input id="newPlanUserPrice" type="number" step="0.01" placeholder="Regular User Price" />
   <input id="newPlanTopPrice" type="number" step="0.01" placeholder="Top User Price" />
   <input id="newPlanCost" type="number" step="0.01" placeholder="Your Cost" />
   <input id="newPlanValidity" placeholder="Validity e.g 30 Days" />
@@ -460,7 +530,8 @@ padding:8px 16px;
     <option value="9MOBILE">9MOBILE</option>
   </select>
   <input id="editPlanName" placeholder="Plan Name" />
-  <input id="editPlanPrice" type="number" step="0.01" placeholder="Selling Price" />
+  <input id="editPlanPrice" type="number" step="0.01" placeholder="Default Price" />
+  <input id="editPlanUserPrice" type="number" step="0.01" placeholder="Regular User Price" />
   <input id="editPlanTopPrice" type="number" step="0.01" placeholder="Top User Price" />
   <input id="editPlanCost" type="number" step="0.01" placeholder="Your Cost" />
   <input id="editPlanValidity" placeholder="Validity" />
@@ -481,61 +552,75 @@ padding:8px 16px;
 </div>
 </div>
 
-<!-- RECEIPT MODAL - FIXED -->
-<div id="receiptModal" class="modal">
-<div class="receiptBox">
-  <div class="receiptHeader">
-    <img src="images/BNHABEEB.png" alt="BNHABEEB">
-    <h3>BN HABEEB DATA HUB</h3>
-    <small>Transaction Receipt</small>
+<!-- RECEIPT MODAL - FIXED WITH QR CODE -->
+<div id="receiptModal">
+  <div class="receiptBox">
+    <div id="receiptContent" style="padding:1px;">
+      <div style="position:relative; padding:24px; border-bottom:1px solid rgba(20,184,166,0.3);">
+        <button onclick="closeReceipt()" style="position:absolute; right:16px; top:16px; color:#c4b5fd; background:rgba(20,184,166,0.2); border:none; cursor:pointer; padding:6px 10px; border-radius:8px; font-size:18px; line-height:1;">✕</button>
+        <div style="display:flex; align-items:center; gap:12px;">
+          <img src="images/BNHABEEB.png" alt="BNHABEEB" style="width:48px; height:48px; border-radius:12px; box-shadow:0 4px 12px rgba(20,184,166,0.5); object-fit:cover;" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+          <div style="width:48px; height:48px; border-radius:12px; background:linear-gradient(135deg, #14B8A6, #0f766e); display:none; align-items:center; justify-content:center; box-shadow:0 4px 12px rgba(20,184,166,0.5);">
+            <span style="color:white; font-weight:bold; font-size:24px;">B</span>
+          </div>
+          <div>
+            <h2 style="color:white; font-weight:bold; font-size:20px; margin:0;">BN HABEEB DATA HUB</h2>
+            <p style="color:rgba(196,181,253,0.8); font-size:12px; margin:0;">Transaction Receipt</p>
+          </div>
+        </div>
+      </div>
+
+      <div style="padding:24px 24px 0;">
+        <div id="statusBadge" style="background:rgba(34,197,94,0.15); color:#4ade80; border:1px solid rgba(34,197,94,0.3); border-radius:16px; padding:16px; display:flex; align-items:center; justify-content:center; gap:8px;">
+          <span style="font-weight:bold; font-size:14px; text-transform:uppercase; letter-spacing:0.05em;">SUCCESSFUL</span>
+        </div>
+      </div>
+
+      <div style="padding:24px; display:flex; flex-direction:column; gap:20px;">
+        <div style="background:rgba(0,0,0,0.4); border-radius:16px; padding:20px; border:1px solid rgba(20,184,166,0.2);">
+          <div style="display:flex; justify-content:space-between; margin-bottom:16px;">
+            <span style="color:rgba(196,181,253,0.9); font-size:14px; font-weight:500;">Phone Number</span>
+            <span id="receiptNumber" style="color:white; font-family:monospace; font-weight:bold; text-align:right;"></span>
+          </div>
+          <div style="height:1px; background:linear-gradient(90deg, transparent, rgba(20,184,166,0.3), transparent); margin:16px 0;"></div>
+          <div style="display:flex; justify-content:space-between; margin-bottom:16px;">
+            <span style="color:rgba(196,181,253,0.9); font-size:14px; font-weight:500;">Network</span>
+            <span id="receiptNetwork" style="color:white; font-size:14px; text-align:right;"></span>
+          </div>
+          <div style="height:1px; background:linear-gradient(90deg, transparent, rgba(20,184,166,0.3), transparent); margin:16px 0;"></div>
+          <div style="display:flex; justify-content:space-between; margin-bottom:16px;">
+            <span style="color:rgba(196,181,253,0.9); font-size:14px; font-weight:500;">Plan</span>
+            <span id="receiptPlan" style="color:white; font-size:14px; text-align:right;"></span>
+          </div>
+          <div style="height:1px; background:linear-gradient(90deg, transparent, rgba(20,184,166,0.3), transparent); margin:16px 0;"></div>
+          <div style="display:flex; justify-content:space-between; margin-bottom:16px;">
+            <span style="color:rgba(196,181,253,0.9); font-size:14px; font-weight:500;">Date & Time</span>
+            <span id="receiptDate" style="color:white; font-size:14px; text-align:right;"></span>
+          </div>
+          <div style="height:1px; background:linear-gradient(90deg, transparent, rgba(20,184,166,0.3), transparent); margin:16px 0;"></div>
+          <div style="display:flex; justify-content:space-between; align-items:center;">
+            <span style="color:rgba(196,181,253,0.9); font-size:14px; font-weight:500;">Amount</span>
+            <span id="receiptPrice" style="color:white; font-weight:bold; font-size:24px;"></span>
+          </div>
+        </div>
+
+        <div style="background:white; border-radius:16px; padding:16px; display:flex; flex-direction:column; align-items:center; gap:8px; border:1px solid rgba(20,184,166,0.2);">
+          <canvas id="qrCanvas"></canvas>
+          <p style="color:#0a1a1a; font-size:12px; font-family:monospace; font-weight:600; margin:0;">Scan to Verify</p>
+        </div>
+
+        <div style="text-align:center;">
+          <p style="color:rgba(196,181,253,0.4); font-size:10px; font-family:monospace; letter-spacing:0.2em; margin:0;">BNHABEEB PAYMENT GATEWAY</p>
+          <p id="txnId" style="color:rgba(196,181,253,0.3); font-size:9px; margin:4px 0 0; cursor:pointer;" onclick="copyTxnId()" title="Click to copy"></p>
+        </div>
+      </div>
+    </div>
+
+    <div style="padding:0 24px 24px; display:grid; grid-template-columns:1fr 1fr; gap:12px;">
+      <button onclick="downloadReceipt()" style="background:rgba(20,184,166,0.2); color:#c4b5fd; font-weight:600; padding:12px; border-radius:12px; border:1px solid rgba(20,184,166,0.4); cursor:pointer;">Download</button>
+      <button onclick="shareReceipt()" style="background:linear-gradient(90deg, #14B8A6, #0f766e); color:white; font-weight:600; padding:12px; border-radius:12px; border:none; cursor:pointer; box-shadow:0 4px 12px rgba(20,184,166,0.4);">Share</button>
+    </div>
   </div>
-  <div class="receiptBody">
-    <div class="receiptRow">
-      <span class="receiptLabel">Transaction ID</span>
-      <span class="receiptValue" id="rcptRef">-</span>
-    </div>
-    <div class="receiptRow">
-      <span class="receiptLabel">Date</span>
-      <span class="receiptValue" id="rcptDate">-</span>
-    </div>
-    <div class="receiptRow">
-      <span class="receiptLabel">Service</span>
-      <span class="receiptValue" id="rcptService">Data</span>
-    </div>
-    <div class="receiptRow">
-      <span class="receiptLabel">Network</span>
-      <span class="receiptValue" id="rcptNetwork">-</span>
-    </div>
-    <div class="receiptRow">
-      <span class="receiptLabel">Phone Number</span>
-      <span class="receiptValue" id="rcptPhone">-</span>
-    </div>
-    <div class="receiptRow">
-      <span class="receiptLabel">Plan</span>
-      <span class="receiptValue" id="rcptPlan">-</span>
-    </div>
-    <div class="receiptRow">
-      <span class="receiptLabel">Amount</span>
-      <span class="receiptValue" id="rcptAmount">₦0</span>
-    </div>
-    <div class="receiptRow">
-      <span class="receiptLabel">Status</span>
-      <span class="receiptValue" id="rcptStatus">-</span>
-    </div>
-    <div class="receiptRow">
-      <span class="receiptLabel">Balance After</span>
-      <span class="receiptValue" id="rcptBalance">₦0</span>
-    </div>
-  </div>
-  <div class="receiptFooter">
-    Thank you for using BN HABEEB DATA HUB<br>
-    Support: 08108871581 | 08117988561
-  </div>
-  <div style="padding:15px;">
-    <button onclick="shareReceipt()" class="primaryBtn">Share Receipt</button>
-    <button onclick="closeModal('receiptModal')" class="dangerBtn" style="margin-top:10px;">Close</button>
-  </div>
-</div>
 </div>
 
 <header>
@@ -548,27 +633,34 @@ padding:8px 16px;
 
 <!-- HOME -->
 <section id="home" class="section active">
+
 <h3 id="usernameDisplay"></h3>
+
 <div class="walletCard">
 <p>Wallet Balance</p>
 <strong id="walletBalance">₦0</strong>
 </div>
+
 <div class="adminWalletCard adminOnly">
 <p>Admin Profit Wallet</p>
 <strong id="adminWalletBalance">₦0</strong>
 </div>
+
 <div class="quickActions">
 <div class="quickCard" onclick="showSection('data')">📶 Buy Data</div>
 <div class="quickCard" onclick="showSection('airtime')">📞 Buy Airtime</div>
 <div class="quickCard" onclick="showSection('fund')">💰 Fund Wallet</div>
 <div class="quickCard adminOnly" onclick="showSection('profitDashboard')">📊 Profit</div>
 </div>
+
 <div id="transactionHistory"></div>
+
 </section>
 
 <!-- FUND -->
 <section id="fund" class="section">
 <h3>Fund Wallet</h3>
+
 <div class="walletCard">
 <p id="bankName">Bank Name</p>
 <strong id="accountNumber">0000000000</strong>
@@ -576,32 +668,36 @@ padding:8px 16px;
 <button onclick="copyAccount()">Copy Account Number</button>
 <button id="generateAccountBtn" onclick="generateAccount()" class="warningBtn" style="display:none">Generate Account Number</button>
 </div>
+
 <button onclick="openFundModal()">💳 Fund via Paystack</button>
-<button onclick="showSection('home')">⬅ Back</button>
+<button onclick="showSection('home')" class="backBtn">⬅ Back</button>
 </section>
 
 <!-- DATA -->
 <section id="data" class="section">
-<button onclick="showSection('home')">⬅ Back</button>
+<button onclick="showSection('home')" class="backBtn">⬅ Back</button>
 <h3>Select Network</h3>
 <div class="networkGrid">
 <div class="networkItem" onclick="selectNetwork('mtn', this)"><img src="images/mtn.png" alt="MTN"></div>
 <div class="networkItem" onclick="selectNetwork('glo', this)"><img src="images/glo.png" alt="GLO"></div>
 <div class="networkItem" onclick="selectNetwork('airtel', this)"><img src="images/airtel.png" alt="AIRTEL"></div>
 </div>
+
 <input id="dataPhone" type="tel" placeholder="Phone Number">
 <div id="planList"></div>
 </section>
 
 <!-- AIRTIME -->
 <section id="airtime" class="section">
-<button onclick="showSection('home')">⬅ Back</button>
+<button onclick="showSection('home')" class="backBtn">⬅ Back</button>
 <h3>Select Network</h3>
+
 <div class="networkGrid">
 <div class="networkItem airtimeNet" onclick="selectAirtimeNetwork('mtn', this)"><img src="images/mtn.png" alt="MTN"></div>
 <div class="networkItem airtimeNet" onclick="selectAirtimeNetwork('glo', this)"><img src="images/glo.png" alt="GLO"></div>
 <div class="networkItem airtimeNet" onclick="selectAirtimeNetwork('airtel', this)"><img src="images/airtel.png" alt="AIRTEL"></div>
 </div>
+
 <input id="airtimePhone" type="tel" placeholder="Phone Number">
 <input id="airtimeAmount" type="number" placeholder="Amount">
 <button onclick="openAirtimePin()">Buy Airtime</button>
@@ -609,19 +705,21 @@ padding:8px 16px;
 
 <!-- TRANSACTIONS -->
 <section id="transactions" class="section">
-<button onclick="showSection('home')">⬅ Back</button>
+<button onclick="showSection('home')" class="backBtn">⬅ Back</button>
 <h3>All Transactions</h3>
 <div id="allTransactions"></div>
 </section>
 
 <!-- ADMIN: PROFIT DASHBOARD -->
 <section id="profitDashboard" class="section adminOnly">
-<button onclick="showSection('home')">⬅ Back</button>
+<button onclick="showSection('home')" class="backBtn">⬅ Back</button>
 <h3>📊 Profit Dashboard</h3>
+
 <div class="adminSection">
   <strong>Total Profit: <span id="totalProfit">₦0</span></strong><br>
   <strong>Admin Wallet: <span id="adminWalletBalance2">₦0</span></strong>
 </div>
+
 <div class="adminSection">
   <input type="date" id="profitFrom">
   <input type="date" id="profitTo">
@@ -632,7 +730,7 @@ padding:8px 16px;
 
 <!-- ADMIN: TOP USERS MANAGER -->
 <section id="topUsersManager" class="section adminOnly">
-<button onclick="showSection('profile')">⬅️ Back</button>
+<button onclick="showSection('profile')" class="backBtn">⬅ Back</button>
 <h3>🔥 Top Users Manager</h3>
 
 <div class="adminSection">
@@ -644,7 +742,7 @@ padding:8px 16px;
 
 <!-- ADMIN: REGULAR USERS MANAGER -->
 <section id="regularUsersManager" class="section adminOnly">
-<button onclick="showSection('profile')">⬅️ Back</button>
+<button onclick="showSection('profile')" class="backBtn">⬅ Back</button>
 <h3>⭐ Regular Users Manager</h3>
 
 <div class="adminSection">
@@ -656,7 +754,7 @@ padding:8px 16px;
 
 <!-- ADMIN: PLANS MANAGER -->
 <section id="plansManager" class="section adminOnly">
-<button onclick="showSection('profile')">⬅️ Back</button>
+<button onclick="showSection('profile')" class="backBtn">⬅ Back</button>
 <h3>📱 Plans Manager</h3>
 
 <div class="adminSection">
@@ -669,58 +767,9 @@ padding:8px 16px;
 </div>
 </section>
 
-<!-- ADD PLAN MODAL -->
-<div id="addPlanModal" class="modal">
-  <div class="modalContent">
-    <span class="close" onclick="closeModal('addPlanModal')">&times;</span>
-    <h3>Add New Plan</h3>
-    <input id="newPlanId" placeholder="Plan ID" required />
-    <select id="newPlanNetwork" required>
-      <option value="">Select Network</option>
-      <option value="MTN">MTN</option>
-      <option value="AIRTEL">AIRTEL</option>
-      <option value="GLO">GLO</option>
-      <option value="9MOBILE">9MOBILE</option>
-    </select>
-    <input id="newPlanName" placeholder="Plan Name" required />
-    <input id="newPlanPrice" type="number" step="0.01" placeholder="Default Price" required />
-    <input id="newPlanRegularPrice" type="number" step="0.01" placeholder="Regular Price" />
-    <input id="newPlanTopPrice" type="number" step="0.01" placeholder="Top Price" />
-    <input id="newPlanCost" type="number" step="0.01" placeholder="Cost" required />
-    <input id="newPlanValidity" placeholder="Validity e.g 30 Days" />
-    <label><input id="newPlanRestricted" type="checkbox" /> Restricted Plan</label>
-    <input id="newPlanProvider" placeholder="Provider" required />
-    <input id="newPlanNetworkId" placeholder="Network ID" required />
-    <input id="newPlanApiId" placeholder="API Plan ID" required />
-    <button onclick="addPlan()" class="successBtn">Add Plan</button>
-    <button onclick="closeModal('addPlanModal')" class="dangerBtn">Cancel</button>
-  </div>
-</div>
-
-<!-- EDIT PLAN MODAL -->
-<div id="editPlanModal" class="modal">
-  <div class="modalContent">
-    <span class="close" onclick="closeModal('editPlanModal')">&times;</span>
-    <h3>Edit Plan</h3>
-    <input id="editPlanName" placeholder="Plan Name" required />
-    <input id="editPlanPrice" type="number" step="0.01" placeholder="Default Price" required />
-    <input id="editPlanRegularPrice" type="number" step="0.01" placeholder="Regular Price" />
-    <input id="editPlanTopPrice" type="number" step="0.01" placeholder="Top Price" />
-    <input id="editPlanCost" type="number" step="0.01" placeholder="Cost" required />
-    <input id="editPlanValidity" placeholder="Validity e.g 30 Days" />
-    <label><input id="editPlanRestricted" type="checkbox" /> Restricted Plan</label>
-    <input id="editPlanProvider" placeholder="Provider" required />
-    <input id="editPlanNetworkId" placeholder="Network ID" required />
-    <input id="editPlanApiId" placeholder="API Plan ID" required />
-    <label><input id="editPlanActive" type="checkbox" /> Active</label>
-    <button onclick="savePlanEdit()" class="successBtn">Save Changes</button>
-    <button onclick="closeModal('editPlanModal')" class="dangerBtn">Cancel</button>
-  </div>
-</div>
-
 <!-- ADMIN: USERS MANAGER -->
 <section id="usersManager" class="section adminOnly">
-<button onclick="showSection('profile')">⬅️ Back</button>
+<button onclick="showSection('profile')" class="backBtn">⬅ Back</button>
 <h3>👥 Users Manager</h3>
 
 <div class="adminSection">
@@ -731,24 +780,39 @@ padding:8px 16px;
 
 <!-- ADMIN: WITHDRAWALS -->
 <section id="withdrawals" class="section adminOnly">
-<button onclick="showSection('profile')">⬅ Back</button>
-<h3>💸 Admin Withdrawals</h3>
-<div class="adminSection">
-  <input id="withdrawAmount" type="number" placeholder="Amount">
-  <input id="withdrawBank" placeholder="Bank Name">
-  <input id="withdrawAccountNumber" placeholder="Account Number">
-  <input id="withdrawAccountName" placeholder="Account Name">
-  <button onclick="requestWithdrawal()" class="primaryBtn">Request Withdrawal</button>
-</div>
-<div class="adminSection">
-  <h4>Withdrawal History</h4>
-  <div id="withdrawalsList"></div>
-</div>
+  <button onclick="showSection('profile')" class="backBtn">⬅ Back</button>
+  <h3>💸 Admin Withdrawals</h3>
+
+  <div class="adminSection">
+    <h4>Withdraw Admin Profit</h4>
+    
+    <label>Amount</label>
+    <input id="withdrawAmount" type="number" placeholder="Amount (Min ₦100)" min="100">
+    
+    <label>Bank</label>
+    <select id="withdrawBank">
+      <option value="">Select Bank</option>
+    </select>
+    
+    <label>Account Number</label>
+    <input id="withdrawAccountNumber" type="text" placeholder="10-digit account number" maxlength="10" pattern="[0-9]*" inputmode="numeric">
+    
+    <label>Account Name</label>
+    <input id="withdrawAccountName" type="text" placeholder="Account name as shown on bank">
+    
+    <button onclick="requestWithdrawal()" class="primaryBtn">Request Withdrawal</button>
+  </div>
+
+  <div class="adminSection">
+    <h4>Withdrawal History</h4>
+    <div id="withdrawalsList"></div>
+  </div>
 </section>
 
 <!-- PROFILE -->
 <section id="profile" class="section">
-<button onclick="showSection('home')">⬅ Back</button>
+<button onclick="showSection('home')" class="backBtn">⬅ Back</button>
+
 <div class="adminSection" style="background:var(--card);">
   <h3>Security</h3>
   <div id="biometricSection">
@@ -757,10 +821,12 @@ padding:8px 16px;
     <button id="biometricLoginBtn" onclick="loginWithBiometric()" style="display:none">🫆 Login with Fingerprint</button>
   </div>
 </div>
+
 <button onclick="openModal('passwordModal')">Change Password</button>
 <button onclick="openModal('pinModalBox')">Change PIN</button>
 <button onclick="logout()">Logout</button>
 
+<!-- ADMIN PANEL -->
 <div class="adminOnly">
 <h3>Admin Tools</h3>
 <button onclick="showSection('profitDashboard')">📊 Profit Dashboard</button>
@@ -768,19 +834,29 @@ padding:8px 16px;
 <button onclick="showSection('usersManager')">👥 Users Manager</button>
 <button onclick="showSection('topUsersManager')">🔥 Top Users Manager</button>
 <button onclick="showSection('withdrawals')">💸 Withdrawals</button>
+
 <hr>
+
 <h3>Transaction Reversal</h3>
 <input id="reverseRef" placeholder="Transaction Reference">
 <button onclick="reverseTransaction()" class="dangerBtn">Reverse Transaction</button>
 </div>
 
 <div class="footer">
-<p>Need Help?</p>
-<a href="https://wa.me/2348108871581" target="_blank">📞 Support (08108871581)</a>
-<a href="https://wa.me/2348117988561" target="_blank">👨‍💻 Developer (08117988561)</a>
-<p>© BNHABEEB DATA HUB</p>
-<p>DEVELOPED BY MAYCONNECT TECHNOLOGIES NIG LTD</p>
+  <p>Need Help?</p>
+  <a href="https://wa.me/234XXXXXXXXXX" target="_blank">📞 Support (0XXXXXXXXXX)</a>
+  <a href="https://wa.me/2348117988561" target="_blank">👨‍💻 Developer (08117988561)</a>
+  
+  <div class="channelLink">
+    <a href="https://whatsapp.com/channel/0029VbCXmxc9MF8xm1vRSM34" target="_blank">
+      📢 Join BN HABEEB WhatsApp Channel
+    </a>
+  </div>
+  
+  <p>© BN HABEEB GENERAL ENTERPRISES NIG LTD</p>
+  <p>DEVELOPED BY MAYCONNECT TECHNOLOGIES NIG LTD</p>
 </div>
+
 </section>
 
 <!-- PIN MODAL -->
@@ -833,6 +909,7 @@ padding:8px 16px;
   </div>
 </div>
 </div>
+
 
 <!-- NAV -->
 <div class="bottomNav">
