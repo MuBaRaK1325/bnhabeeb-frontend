@@ -1401,12 +1401,20 @@ async function loadAccount() {
   const res = await fetch(API + "/api/me", { headers: { Authorization: "Bearer " + getToken() } });
   const user = await res.json();
 
-  if (el("bankName")) el("bankName").innerText = user.bank_name || "N/A";
-  if (el("accountNumber")) el("accountNumber").innerText = user.account_number || "N/A";
-  if (el("accountName")) el("accountName").innerText = user.account_name || "N/A";
+  // Use PaymentPoint DVA if it exists, otherwise fallback to old Paystack fields
+  const dva = user.wallet?.dva || {};
+  const bankName = dva.bankName || user.bank_name || "N/A";
+  const accountNumber = dva.accountNumber || user.account_number || "N/A";
+  const accountName = dva.accountName || user.account_name || "N/A";
 
-  if (!user.account_number && el("generateAccountBtn")) {
-    el("generateAccountBtn").style.display = "block";
+  if (el("bankName")) el("bankName").innerText = bankName;
+  if (el("accountNumber")) el("accountNumber").innerText = accountNumber;
+  if (el("accountName")) el("accountName").innerText = accountName;
+
+  // Show generate button only if no account exists at all
+  if (el("generateAccountBtn")) {
+    const hasAccount = accountNumber !== "N/A";
+    el("generateAccountBtn").style.display = hasAccount ? "none" : "block";
   }
 
   updateWallet(user.wallet_balance);
