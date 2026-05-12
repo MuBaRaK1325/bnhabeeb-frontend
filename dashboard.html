@@ -14,7 +14,6 @@
 <meta name="apple-mobile-web-app-title" content="BNHABEEB">
 <link rel="apple-touch-icon" href="/images/BNHABEEB-192.png">
 <link rel="icon" href="/images/BNHABEEB.png">
-<script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
 
 <style>
@@ -659,18 +658,18 @@ box-shadow:0 0 40px rgba(20,184,166,0.3);
 
 <!-- FUND -->
 <section id="fund" class="section">
-<h3>Fund Wallet</h3>
+  <h3>Fund Wallet</h3>
 
-<div class="walletCard">
-<p id="bankName">Bank Name</p>
-<strong id="accountNumber">0000000000</strong>
-<p id="accountName">Account Name</p>
-<button onclick="copyAccount()">Copy Account Number</button>
-<button id="generateAccountBtn" onclick="generateAccount()" class="warningBtn" style="display:none">Generate Account Number</button>
-</div>
+  <div class="walletCard">
+    <p id="bankName">Bank Name</p>
+    <strong id="accountNumber">0000000000</strong>
+    <p id="accountName">Account Name</p>
+    <button onclick="copyAccount()">Copy Account Number</button>
+    <button id="generateAccountBtn" onclick="generateAccount()" class="warningBtn" style="display:none">Generate Account Number</button>
+  </div>
 
-<button onclick="openFundModal()">💳 Fund via Paystack</button>
-<button onclick="showSection('home')" class="backBtn">⬅ Back</button>
+  <button onclick="openFundModal()">💳 Fund via Bank Transfer</button>
+  <button onclick="showSection('home')" class="backBtn">⬅ Back</button>
 </section>
 
 <!-- DATA -->
