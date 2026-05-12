@@ -709,23 +709,7 @@ box-shadow:0 0 40px rgba(20,184,166,0.3);
 <div id="allTransactions"></div>
 </section>
 
-<!-- ADMIN: PROFIT DASHBOARD -->
-<section id="profitDashboard" class="section adminOnly">
-<button onclick="showSection('home')" class="backBtn">⬅ Back</button>
-<h3>📊 Profit Dashboard</h3>
 
-<div class="adminSection">
-  <strong>Total Profit: <span id="totalProfit">₦0</span></strong><br>
-  <strong>Admin Wallet: <span id="adminWalletBalance2">₦0</span></strong>
-</div>
-
-<div class="adminSection">
-  <input type="date" id="profitFrom">
-  <input type="date" id="profitTo">
-  <button onclick="loadProfitDashboard()">Filter</button>
-  <table id="profitTable"></table>
-</div>
-</section>
 
 <!-- ADMIN: TRANSACTIONS MANAGER -->
 <section id="transactionsManager" class="section adminOnly">
@@ -817,36 +801,7 @@ box-shadow:0 0 40px rgba(20,184,166,0.3);
 </div>
 </section>
 
-<!-- ADMIN: WITHDRAWALS -->
-<section id="withdrawals" class="section adminOnly">
-  <button onclick="showSection('profile')" class="backBtn">⬅ Back</button>
-  <h3>💸 Admin Withdrawals</h3>
 
-  <div class="adminSection">
-    <h4>Withdraw Admin Profit</h4>
-    
-    <label>Amount</label>
-    <input id="withdrawAmount" type="number" placeholder="Amount (Min ₦100)" min="100">
-    
-    <label>Bank</label>
-    <select id="withdrawBank">
-      <option value="">Select Bank</option>
-    </select>
-    
-    <label>Account Number</label>
-    <input id="withdrawAccountNumber" type="text" placeholder="10-digit account number" maxlength="10" pattern="[0-9]*" inputmode="numeric">
-    
-    <label>Account Name</label>
-    <input id="withdrawAccountName" type="text" placeholder="Account name as shown on bank">
-    
-    <button onclick="requestWithdrawal()" class="primaryBtn">Request Withdrawal</button>
-  </div>
-
-  <div class="adminSection">
-    <h4>Withdrawal History</h4>
-    <div id="withdrawalsList"></div>
-  </div>
-</section>
 
 <style>
 .transactionCard {
