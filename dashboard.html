@@ -14,7 +14,7 @@
 <meta name="apple-mobile-web-app-title" content="BNHABEEB">
 <link rel="apple-touch-icon" href="/images/BNHABEEB-192.png">
 <link rel="icon" href="/images/BNHABEEB.png">
-<script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+</script>
 
 <style>
 :root{
@@ -483,7 +483,7 @@ box-shadow:0 0 40px rgba(20,184,166,0.3);
 </head>
 <body>
 
-<!-- ADD PLAN MODAL -->
+<!-- ADD PLAN MODAL - WITH USER PRICE FIELD -->
 <div id="addPlanModal" class="modal">
 <div class="modalBox">
   <h3>Add New Plan</h3>
@@ -517,7 +517,7 @@ box-shadow:0 0 40px rgba(20,184,166,0.3);
 </div>
 </div>
 
-<!-- EDIT PLAN MODAL -->
+<!-- EDIT PLAN MODAL - WITH USER PRICE FIELD -->
 <div id="editPlanModal" class="modal">
 <div class="modalBox">
   <h3>Edit Plan</h3>
@@ -551,26 +551,26 @@ box-shadow:0 0 40px rgba(20,184,166,0.3);
 </div>
 </div>
 
-<!-- RECEIPT MODAL - FIXED WITH QR CODE -->
-<div id="receiptModal">
-  <div class="receiptBox">
+<!-- BNHABEEB RECEIPT MODAL - FIXED -->
+<div id="receiptModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.7); backdrop-filter:blur(8px); z-index:50; align-items:center; justify-content:center; padding:16px;">
+  <div class="receiptBox" style="background:#0f172a; border-radius:24px; max-width:420px; width:100%; overflow:hidden; box-shadow:0 25px 50px rgba(0,0,0,0.5); border:1px solid rgba(20,184,166,0.3);">
     <div id="receiptContent" style="padding:1px;">
       <div style="position:relative; padding:24px; border-bottom:1px solid rgba(20,184,166,0.3);">
-        <button onclick="closeReceipt()" style="position:absolute; right:16px; top:16px; color:#c4b5fd; background:rgba(20,184,166,0.2); border:none; cursor:pointer; padding:6px 10px; border-radius:8px; font-size:18px; line-height:1;">✕</button>
+        <button onclick="closeReceipt()" style="position:absolute; right:16px; top:16px; color:#99f6e4; background:rgba(20,184,166,0.2); border:none; cursor:pointer; padding:6px 10px; border-radius:8px; font-size:18px; line-height:1;">✕</button>
         <div style="display:flex; align-items:center; gap:12px;">
-          <img src="images/BNHABEEB.png" alt="BNHABEEB" style="width:48px; height:48px; border-radius:12px; box-shadow:0 4px 12px rgba(20,184,166,0.5); object-fit:cover;" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
-          <div style="width:48px; height:48px; border-radius:12px; background:linear-gradient(135deg, #14B8A6, #0f766e); display:none; align-items:center; justify-content:center; box-shadow:0 4px 12px rgba(20,184,166,0.5);">
+          <img src="images/bnhabeeb.png" alt="bnhabeeb" style="width:48px; height:48px; border-radius:12px; box-shadow:0 4px 12px rgba(20,184,166,0.5); object-fit:cover;" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+          <div style="width:48px; height:48px; border-radius:12px; background:linear-gradient(135deg, #14b8a6, #0d9488); display:none; align-items:center; justify-content:center; box-shadow:0 4px 12px rgba(20,184,166,0.5);">
             <span style="color:white; font-weight:bold; font-size:24px;">B</span>
           </div>
           <div>
-            <h2 style="color:white; font-weight:bold; font-size:20px; margin:0;">BN HABEEB DATA HUB</h2>
-            <p style="color:rgba(196,181,253,0.8); font-size:12px; margin:0;">Transaction Receipt</p>
+            <h2 style="color:white; font-weight:bold; font-size:20px; margin:0;">BNHABEEB VTU</h2>
+            <p style="color:rgba(153,246,228,0.8); font-size:12px; margin:0;">Transaction Receipt</p>
           </div>
         </div>
       </div>
 
       <div style="padding:24px 24px 0;">
-        <div id="statusBadge" style="background:rgba(34,197,94,0.15); color:#4ade80; border:1px solid rgba(34,197,94,0.3); border-radius:16px; padding:16px; display:flex; align-items:center; justify-content:center; gap:8px;">
+        <div id="statusBadge" style="background:rgba(20,184,166,0.15); color:#2dd4bf; border:1px solid rgba(20,184,166,0.3); border-radius:16px; padding:16px; display:flex; align-items:center; justify-content:center; gap:8px;">
           <span style="font-weight:bold; font-size:14px; text-transform:uppercase; letter-spacing:0.05em;">SUCCESSFUL</span>
         </div>
       </div>
@@ -578,46 +578,41 @@ box-shadow:0 0 40px rgba(20,184,166,0.3);
       <div style="padding:24px; display:flex; flex-direction:column; gap:20px;">
         <div style="background:rgba(0,0,0,0.4); border-radius:16px; padding:20px; border:1px solid rgba(20,184,166,0.2);">
           <div style="display:flex; justify-content:space-between; margin-bottom:16px;">
-            <span style="color:rgba(196,181,253,0.9); font-size:14px; font-weight:500;">Phone Number</span>
+            <span style="color:rgba(153,246,228,0.9); font-size:14px; font-weight:500;">Phone Number</span>
             <span id="receiptNumber" style="color:white; font-family:monospace; font-weight:bold; text-align:right;"></span>
           </div>
           <div style="height:1px; background:linear-gradient(90deg, transparent, rgba(20,184,166,0.3), transparent); margin:16px 0;"></div>
           <div style="display:flex; justify-content:space-between; margin-bottom:16px;">
-            <span style="color:rgba(196,181,253,0.9); font-size:14px; font-weight:500;">Network</span>
+            <span style="color:rgba(153,246,228,0.9); font-size:14px; font-weight:500;">Network</span>
             <span id="receiptNetwork" style="color:white; font-size:14px; text-align:right;"></span>
           </div>
           <div style="height:1px; background:linear-gradient(90deg, transparent, rgba(20,184,166,0.3), transparent); margin:16px 0;"></div>
           <div style="display:flex; justify-content:space-between; margin-bottom:16px;">
-            <span style="color:rgba(196,181,253,0.9); font-size:14px; font-weight:500;">Plan</span>
+            <span style="color:rgba(153,246,228,0.9); font-size:14px; font-weight:500;">Plan</span>
             <span id="receiptPlan" style="color:white; font-size:14px; text-align:right;"></span>
           </div>
           <div style="height:1px; background:linear-gradient(90deg, transparent, rgba(20,184,166,0.3), transparent); margin:16px 0;"></div>
           <div style="display:flex; justify-content:space-between; margin-bottom:16px;">
-            <span style="color:rgba(196,181,253,0.9); font-size:14px; font-weight:500;">Date & Time</span>
+            <span style="color:rgba(153,246,228,0.9); font-size:14px; font-weight:500;">Date & Time</span>
             <span id="receiptDate" style="color:white; font-size:14px; text-align:right;"></span>
           </div>
           <div style="height:1px; background:linear-gradient(90deg, transparent, rgba(20,184,166,0.3), transparent); margin:16px 0;"></div>
           <div style="display:flex; justify-content:space-between; align-items:center;">
-            <span style="color:rgba(196,181,253,0.9); font-size:14px; font-weight:500;">Amount</span>
+            <span style="color:rgba(153,246,228,0.9); font-size:14px; font-weight:500;">Amount Paid</span>
             <span id="receiptPrice" style="color:white; font-weight:bold; font-size:24px;"></span>
           </div>
         </div>
 
-        <div style="background:white; border-radius:16px; padding:16px; display:flex; flex-direction:column; align-items:center; gap:8px; border:1px solid rgba(20,184,166,0.2);">
-          <canvas id="qrCanvas"></canvas>
-          <p style="color:#0a1a1a; font-size:12px; font-family:monospace; font-weight:600; margin:0;">Scan to Verify</p>
-        </div>
-
-        <div style="text-align:center;">
-          <p style="color:rgba(196,181,253,0.4); font-size:10px; font-family:monospace; letter-spacing:0.2em; margin:0;">BNHABEEB PAYMENT GATEWAY</p>
-          <p id="txnId" style="color:rgba(196,181,253,0.3); font-size:9px; margin:4px 0 0; cursor:pointer;" onclick="copyTxnId()" title="Click to copy"></p>
+        <div style="text-align:center; padding:16px 0;">
+          <p style="color:rgba(153,246,228,0.4); font-size:10px; font-family:monospace; letter-spacing:0.2em; margin:0;">BNHABEEB PAYMENT GATEWAY</p>
+          <p id="txnId" style="color:rgba(153,246,228,0.3); font-size:9px; margin:4px 0 0; cursor:pointer;" onclick="copyTxnId()" title="Click to copy"></p>
         </div>
       </div>
     </div>
 
     <div style="padding:0 24px 24px; display:grid; grid-template-columns:1fr 1fr; gap:12px;">
-      <button onclick="downloadReceipt()" style="background:rgba(20,184,166,0.2); color:#c4b5fd; font-weight:600; padding:12px; border-radius:12px; border:1px solid rgba(20,184,166,0.4); cursor:pointer;">Download</button>
-      <button onclick="shareReceipt()" style="background:linear-gradient(90deg, #14B8A6, #0f766e); color:white; font-weight:600; padding:12px; border-radius:12px; border:none; cursor:pointer; box-shadow:0 4px 12px rgba(20,184,166,0.4);">Share</button>
+      <button onclick="downloadReceipt()" style="background:rgba(20,184,166,0.2); color:#99f6e4; font-weight:600; padding:12px; border-radius:12px; border:1px solid rgba(20,184,166,0.4); cursor:pointer;">Download</button>
+      <button onclick="shareReceipt()" style="background:linear-gradient(90deg, #14b8a6, #0d9488); color:white; font-weight:600; padding:12px; border-radius:12px; border:none; cursor:pointer; box-shadow:0 4px 12px rgba(20,184,166,0.4);">Share</button>
     </div>
   </div>
 </div>
@@ -646,6 +641,7 @@ box-shadow:0 0 40px rgba(20,184,166,0.3);
 <div class="quickCard" onclick="showSection('data')">📶 Buy Data</div>
 <div class="quickCard" onclick="showSection('airtime')">📞 Buy Airtime</div>
 <div class="quickCard" onclick="showSection('fund')">💰 Fund Wallet</div>
+
 </div>
 
 <div id="transactionHistory"></div>
@@ -654,18 +650,18 @@ box-shadow:0 0 40px rgba(20,184,166,0.3);
 
 <!-- FUND -->
 <section id="fund" class="section">
-  <h3>Fund Wallet</h3>
+<h3>Fund Wallet</h3>
 
-  <div class="walletCard">
-    <p id="bankName">Bank Name</p>
-    <strong id="accountNumber">0000000000</strong>
-    <p id="accountName">Account Name</p>
-    <button onclick="copyAccount()">Copy Account Number</button>
-    <button id="generateAccountBtn" onclick="generateAccount()" class="warningBtn" style="display:none">Generate Account Number</button>
-  </div>
+<div class="walletCard">
+<p id="bankName">Bank Name</p>
+<strong id="accountNumber">0000000000</strong>
+<p id="accountName">Account Name</p>
+<button onclick="copyAccount()">Copy Account Number</button>
+<button id="generateAccountBtn" onclick="generateAccount()" class="warningBtn" style="display:none">Generate Account Number</button>
+</div>
 
-  <button onclick="openFundModal()">💳 Fund via Bank Transfer</button>
-  <button onclick="showSection('home')" class="backBtn">⬅ Back</button>
+
+<button onclick="showSection('home')" class="backBtn">⬅ Back</button>
 </section>
 
 <!-- DATA -->
@@ -706,6 +702,7 @@ box-shadow:0 0 40px rgba(20,184,166,0.3);
 </section>
 
 
+</section>
 
 <!-- ADMIN: TRANSACTIONS MANAGER -->
 <section id="transactionsManager" class="section adminOnly">
@@ -747,37 +744,102 @@ box-shadow:0 0 40px rgba(20,184,166,0.3);
 </div>
 </section>
 
-
-</section>
-
-
-</section>
-
 <!-- ADMIN: PLANS MANAGER -->
 <section id="plansManager" class="section adminOnly">
-<button onclick="showSection('profile')" class="backBtn">⬅ Back</button>
-<h3>📱 Plans Manager</h3>
+  <button onclick="showSection('profile')" class="backBtn">⬅ Back</button>
+  <h3>📱 Plans Manager</h3>
 
-<div class="adminSection">
-  <button onclick="openModal('addPlanModal')" class="successBtn">+ Add New Plan</button>
-</div>
+  <div class="adminSection">
+    <button onclick="openModal('addPlanModal')" class="successBtn">+ Add New Plan</button>
+  </div>
 
-<div class="adminSection">
-  <h4>All Plans</h4>
-  <div id="adminPlansList"></div>
-</div>
+  <div class="adminSection">
+    <h4>All Plans</h4>
+    <div id="adminPlansList"></div>
+  </div>
 </section>
 
 <!-- ADMIN: USERS MANAGER -->
 <section id="usersManager" class="section adminOnly">
-<button onclick="showSection('profile')" class="backBtn">⬅ Back</button>
-<h3>👥 Users Manager</h3>
+  <button onclick="showSection('profile')" class="backBtn">⬅ Back</button>
+  <h3>👥 Users Manager</h3>
 
-<div class="adminSection">
-  <input id="userSearch" placeholder="Search username or email" oninput="loadAdminUsers()">
-  <div id="adminUsersList"></div>
-</div>
+  <div class="adminSection">
+    <input id="userSearch" placeholder="Search username or email" oninput="loadAdminUsers()">
+    <div id="adminUsersList"></div>
+  </div>
 </section>
+
+<!-- ADD PLAN MODAL -->
+<div id="addPlanModal" class="modal">
+  <div class="modalBackdrop" onclick="closeModal('addPlanModal')"></div>
+  <div class="modalBox">
+    <h3>Add New Plan</h3>
+    <input id="newPlanId" type="number" placeholder="Plan ID (from provider)" />
+    <select id="newPlanNetwork">
+      <option value="">Select Network</option>
+      <option value="MTN">MTN</option>
+      <option value="GLO">GLO</option>
+      <option value="AIRTEL">AIRTEL</option>
+      <option value="9MOBILE">9MOBILE</option>
+    </select>
+    <input id="newPlanName" placeholder="Plan Name e.g 1GB SME" />
+    <input id="newPlanPrice" type="number" step="0.01" placeholder="Default Price" />
+    <input id="newPlanUserPrice" type="number" step="0.01" placeholder="Regular User Price" />
+    <input id="newPlanTopPrice" type="number" step="0.01" placeholder="Top User Price" />
+    <input id="newPlanCost" type="number" step="0.01" placeholder="Your Cost" />
+    <input id="newPlanValidity" placeholder="Validity e.g 30 Days" />
+    <select id="newPlanProvider">
+      <option value="">Select Provider</option>
+      <option value="maitama">Maitama</option>
+      <option value="cheapdatahub">CheapDataHub</option>
+      <option value="subpadi">SubPadi</option>
+    </select>
+    <input id="newPlanNetworkId" placeholder="Network ID: 1=MTN, 2=Airtel, 3=Glo, 4=9mobile" />
+    <input id="newPlanApiId" placeholder="API Plan ID from provider dashboard" />
+    <label><input id="newPlanRestricted" type="checkbox"> Restricted to my company</label>
+    <div style="display:flex;gap:10px;margin-top:15px;">
+      <button id="addPlanBtn" class="successBtn">Add Plan</button>
+      <button onclick="closeModal('addPlanModal')" class="dangerBtn">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- EDIT PLAN MODAL -->
+<div id="editPlanModal" class="modal">
+  <div class="modalBackdrop" onclick="closeModal('editPlanModal')"></div>
+  <div class="modalBox">
+    <h3>Edit Plan</h3>
+    <input type="hidden" id="editPlanId" />
+    <select id="editPlanNetwork">
+      <option value="MTN">MTN</option>
+      <option value="AIRTEL">AIRTEL</option>
+      <option value="GLO">GLO</option>
+      <option value="9MOBILE">9MOBILE</option>
+    </select>
+    <input id="editPlanName" placeholder="Plan Name" />
+    <input id="editPlanPrice" type="number" step="0.01" placeholder="Default Price" />
+    <input id="editPlanUserPrice" type="number" step="0.01" placeholder="Regular User Price" />
+    <input id="editPlanTopPrice" type="number" step="0.01" placeholder="Top User Price" />
+    <input id="editPlanCost" type="number" step="0.01" placeholder="Your Cost" />
+    <input id="editPlanValidity" placeholder="Validity" />
+    <select id="editPlanProvider">
+      <option value="">Select Provider</option>
+      <option value="maitama">Maitama</option>
+      <option value="cheapdatahub">CheapDataHub</option>
+      <option value="subpadi">SubPadi</option>
+    </select>
+    <input id="editPlanNetworkId" placeholder="Network ID" />
+    <input id="editPlanApiId" placeholder="API Plan ID" />
+    <label><input id="editPlanRestricted" type="checkbox"> Restricted to my company</label>
+    <label><input id="editPlanActive" type="checkbox"> Active</label>
+    <div style="display:flex;gap:10px;margin-top:15px;">
+      <button id="savePlanBtn" class="successBtn">Update Plan</button>
+      <button onclick="closeModal('editPlanModal')" class="dangerBtn">Cancel</button>
+    </div>
+  </div>
+</div>
+
 
 
 
@@ -873,7 +935,6 @@ box-shadow:0 0 40px rgba(20,184,166,0.3);
 <button onclick="showSection('profitDashboard')">📊 Profit Dashboard</button>
 <button onclick="showSection('plansManager')">📱 Plans Manager</button>
 <button onclick="showSection('usersManager')">👥 Users Manager</button>
-<button onclick="showSection('topUsersManager')">🔥 Top Users Manager</button>
 <button onclick="showSection('withdrawals')">💸 Withdrawals</button>
 <button onclick="showSection('transactionsManager'); loadAdminTransactions();" class="adminNavBtn">🧾 Transactions</button>
 <hr>
@@ -890,11 +951,11 @@ box-shadow:0 0 40px rgba(20,184,166,0.3);
   
   <div class="channelLink">
     <a href="https://whatsapp.com/channel/0029VbCXmxc9MF8xm1vRSM34" target="_blank">
-      📢 Join BN HABEEB WhatsApp Channel
+      📢 Join BNHABEEB WhatsApp Channel
     </a>
   </div>
   
-  <p>© BN HABEEB GENERAL ENTERPRISES NIG LTD</p>
+  <p>© BNHABEEB GENERAL RESOURCES NIG LTD</p>
   <p>DEVELOPED BY MAYCONNECT TECHNOLOGIES NIG LTD</p>
 </div>
 
@@ -934,6 +995,8 @@ box-shadow:0 0 40px rgba(20,184,166,0.3);
 </div>
 </div>
 
+
+
 <!-- MESSAGE MODAL -->
 <div id="msgModal" class="modal">
 <div class="modalBox" id="msgBox"></div>
@@ -942,8 +1005,8 @@ box-shadow:0 0 40px rgba(20,184,166,0.3);
 <!-- CONFIRM MODAL -->
 <div id="confirmModal" class="modal">
 <div class="modalBox">
-  <h3 id="confirmTitle">Confirm</h3>
-  <p id="confirmMsg" style="margin:15px 0;"></p>
+  <h3 id="confirmTitle" style="color:var(--primary);margin-bottom:12px;">Confirm</h3>
+  <p id="confirmMsg" style="margin:15px 0;color:var(--text-muted);"></p>
   <div class="modal-buttons">
     <button id="confirmYes" class="successBtn">Yes</button>
     <button onclick="closeModal('confirmModal')" class="dangerBtn">Cancel</button>
@@ -951,33 +1014,125 @@ box-shadow:0 0 40px rgba(20,184,166,0.3);
 </div>
 </div>
 
-
 <!-- NAV -->
 <div class="bottomNav">
-<button onclick="showSection('home')">Home</button>
-<button onclick="showSection('data')">Data</button>
-<button onclick="showSection('transactions')">History</button>
-<button onclick="showSection('profile')">Profile</button>
+<button onclick="showSection('home')">🏠<br>Home</button>
+<button onclick="showSection('data')">📶<br>Data</button>
+<button onclick="showSection('transactions')">📊<br>History</button>
+<button onclick="showSection('profile')">👤<br>Profile</button>
 </div>
 
 <!-- INSTALL BANNER -->
 <div id="installBanner">
-  <span>Install BN HABEEB for faster access</span>
-  <button id="installBtn" class="primaryBtn">Install</button>
-  <button id="closeBanner" class="dangerBtn">Later</button>
+  <span>Install BNHABEEB for faster access</span>
+  <button id="installBtn" class="primaryBtn" style="width:auto;margin:0 5px;">Install</button>
+  <button id="closeBanner" class="dangerBtn" style="width:auto;margin:0 5px;">Later</button>
 </div>
 
+
+<script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
 <script>
-// SERVICE WORKER REGISTRATION
-if ('serviceWorker' in navigator) {
-  window.addEventListener('load', () => {
-    navigator.serviceWorker.register('/service-worker.js')
-      .then(reg => console.log('SW registered'))
-      .catch(err => console.log('SW failed:', err));
+let currentTxnId = '';
+
+function showReceipt(data) {
+  document.getElementById('receiptNumber').textContent = data.number || 'N/A';
+  document.getElementById('receiptNetwork').textContent = data.network || 'N/A';
+  document.getElementById('receiptPlan').textContent = data.plan || data.type || 'N/A';
+  document.getElementById('receiptDate').textContent = data.date;
+  document.getElementById('receiptPrice').textContent = '₦' + Number(data.price).toLocaleString();
+  currentTxnId = data.txnId || data.id || 'BNH' + Date.now().toString().slice(-8);
+  document.getElementById('txnId').textContent = 'Transaction ID: ' + currentTxnId;
+
+  const statusColors = {
+    success: {bg: 'rgba(20,184,166,0.15)', color: '#2dd4bf', border: 'rgba(20,184,166,0.3)', text: 'SUCCESSFUL'},
+    failed: {bg: 'rgba(239,68,68,0.15)', color: '#f87171', border: 'rgba(239,68,68,0.3)', text: 'FAILED'},
+    pending: {bg: 'rgba(234,179,8,0.15)', color: '#facc15', border: 'rgba(234,179,8,0.3)', text: 'PENDING'}
+  };
+  const s = statusColors[(data.status || 'pending').toLowerCase()] || statusColors.pending;
+  const badge = document.getElementById('statusBadge');
+  badge.style.background = s.bg;
+  badge.style.color = s.color;
+  badge.style.borderColor = s.border;
+  badge.querySelector('span').textContent = s.text;
+
+  document.getElementById('receiptModal').style.display = 'flex';
+}
+
+function closeReceipt() {
+  document.getElementById('receiptModal').style.display = 'none';
+}
+
+function copyTxnId() {
+  navigator.clipboard.writeText(currentTxnId);
+  const el = document.getElementById('txnId');
+  const original = el.textContent;
+  el.textContent = 'Copied!';
+  setTimeout(() => el.textContent = original, 1000);
+}
+
+async function downloadReceipt() {
+  const receiptContent = document.getElementById('receiptContent');
+  const canvas = await html2canvas(receiptContent, {
+    backgroundColor: '#0f766e', // teal-700
+    scale: 2,
+    useCORS: true,
+    logging: false
+  });
+  const link = document.createElement('a');
+  link.download = `bnhabeeb-Receipt-${document.getElementById('receiptNumber').textContent}.png`;
+  link.href = canvas.toDataURL('image/png');
+  link.click();
+}
+
+async function shareReceipt() {
+  const receiptContent = document.getElementById('receiptContent');
+  const canvas = await html2canvas(receiptContent, {
+    backgroundColor: '#0f766e', // teal-700
+    scale: 2,
+    useCORS: true,
+    logging: false
+  });
+  canvas.toBlob(async (blob) => {
+    const file = new File([blob], 'bnhabeeb-receipt.png', {type: 'image/png'});
+    if (navigator.share && navigator.canShare && navigator.canShare({files: [file]})) {
+      try {
+        await navigator.share({
+          files: [file],
+          title: 'bnhabeeb Receipt',
+          text: `Transaction ${document.getElementById('receiptPrice').textContent} - ${document.getElementById('receiptNumber').textContent}`
+        });
+      } catch(e) {
+        downloadReceipt();
+      }
+    } else {
+      downloadReceipt();
+    }
   });
 }
-</script>
 
-<script src="app.js?v=2.3.0"></script>
+document.getElementById('receiptModal').addEventListener('click', function(e) {
+  if (e.target === this) closeReceipt();
+});
+
+// Show message modal helper
+function showMsg(msg, isError = false){
+  const box = document.getElementById('msgBox');
+  box.innerHTML = `<p style="margin-bottom:16px;color:${isError ? '#ff4d4d' : 'white'}">${msg}</p><button onclick="closeModal('msgModal')" class="primaryBtn">OK</button>`;
+  document.getElementById('msgModal').style.display = 'flex';
+}
+
+// Show confirm modal helper
+function showConfirm(title, msg, onYes){
+  document.getElementById('confirmTitle').textContent = title;
+  document.getElementById('confirmMsg').textContent = msg;
+  document.getElementById('confirmYes').onclick = () => {
+    closeModal('confirmModal');
+    onYes();
+  };
+  document.getElementById('confirmModal').style.display = 'flex';
+}
+</script>
+<script src="app.js?v=2.3.1"></script>
+
 </body>
 </html>
