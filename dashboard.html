@@ -640,16 +640,12 @@ box-shadow:0 0 40px rgba(20,184,166,0.3);
 <strong id="walletBalance">₦0</strong>
 </div>
 
-<div class="adminWalletCard adminOnly">
-<p>Admin Profit Wallet</p>
-<strong id="adminWalletBalance">₦0</strong>
-</div>
+
 
 <div class="quickActions">
 <div class="quickCard" onclick="showSection('data')">📶 Buy Data</div>
 <div class="quickCard" onclick="showSection('airtime')">📞 Buy Airtime</div>
 <div class="quickCard" onclick="showSection('fund')">💰 Fund Wallet</div>
-<div class="quickCard adminOnly" onclick="showSection('profitDashboard')">📊 Profit</div>
 </div>
 
 <div id="transactionHistory"></div>
@@ -751,28 +747,10 @@ box-shadow:0 0 40px rgba(20,184,166,0.3);
 </div>
 </section>
 
-<!-- ADMIN: TOP USERS MANAGER -->
-<section id="topUsersManager" class="section adminOnly">
-<button onclick="showSection('profile')" class="backBtn">⬅ Back</button>
-<h3>🔥 Top Users Manager</h3>
 
-<div class="adminSection">
-  <input id="topUserEmail" type="email" placeholder="User Email">
-  <button onclick="addTopUser()" class="successBtn">Add Top User</button>
-  <div id="topUsersList"></div>
-</div>
 </section>
 
-<!-- ADMIN: REGULAR USERS MANAGER -->
-<section id="regularUsersManager" class="section adminOnly">
-<button onclick="showSection('profile')" class="backBtn">⬅ Back</button>
-<h3>⭐ Regular Users Manager</h3>
 
-<div class="adminSection">
-  <input id="regularUserEmail" type="email" placeholder="User Email">
-  <button onclick="addRegularUser()" class="successBtn">Add Regular User</button>
-  <div id="regularUsersList"></div>
-</div>
 </section>
 
 <!-- ADMIN: PLANS MANAGER -->
