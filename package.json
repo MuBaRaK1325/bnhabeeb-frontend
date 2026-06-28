@@ -1,0 +1,25 @@
+{
+  "name": "bnhabeeb-froontend",
+  "version": "1.0.0",
+  "description": "",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/MuBaRaK1325/bnhabeeb-frontend.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/MuBaRaK1325/bnhabeeb-frontend/issues"
+  },
+  "homepage": "https://github.com/MuBaRaK1325/bnhabeeb-frontend#readme",
+  "dependencies": {
+    "@capacitor/android": "^8.4.1",
+    "@capacitor/cli": "^8.4.1",
+    "@capacitor/core": "^8.4.1"
+  }
+}

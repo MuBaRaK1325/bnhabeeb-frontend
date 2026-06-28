@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BNHABEEB DATA HUB - Create Account</title>
+
+<meta name="theme-color" content="#14B8A6">
+<meta name="msapplication-TileColor" content="#14B8A6">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="icon" type="image/png" href="images/BNHABEEB.png">
+<link rel="apple-touch-icon" href="images/BNHABEEB.png">
+
+<style>
+
+*{
+  margin:0;
+  padding:0;
+  box-sizing:border-box;
+  font-family:system-ui, -apple-system, sans-serif;
+}
+
+body{
+  background:linear-gradient(135deg, #0a1a1a, #102d2d);
+  color:white;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  min-height:100vh;
+  flex-direction:column;
+  padding:1rem;
+}
+
+.logo{
+  width:110px;
+  height:110px;
+  border-radius:50%;
+  border:4px solid #14B8A6;
+  padding:8px;
+  margin-bottom:40px;
+  box-shadow:0 0 20px rgba(20, 184, 166, 0.4);
+  background:rgba(255, 255, 255, 0.1);
+  backdrop-filter:blur(10px);
+  object-fit:cover;
+}
+
+.card{
+  background:rgba(255, 255, 255, 0.1);
+  backdrop-filter:blur(10px);
+  -webkit-backdrop-filter:blur(10px);
+  border:1px solid rgba(255, 255, 255, 0.2);
+  padding:30px;
+  border-radius:20px;
+  width:90%;
+  max-width:380px;
+  box-shadow:0 8px 32px rgba(0, 0, 0, 0.4);
+}
+
+.title{
+  text-align:center;
+  font-size:26px;
+  margin-bottom:25px;
+  font-weight:700;
+}
+
+.inputBox{
+  margin-bottom:18px;
+  position:relative;
+}
+
+input{
+  width:100%;
+  padding:14px;
+  border-radius:12px;
+  border:1px solid rgba(255, 255, 255, 0.2);
+  background:rgba(255, 255, 255, 0.1);
+  color:white;
+  font-size:16px;
+  outline:none;
+  transition:all 0.2s;
+}
+input::placeholder{color:rgba(255, 255, 255, 0.7);}
+input:focus{
+  border-color:#14B8A6;
+  background:rgba(255, 255, 255, 0.15);
+}
+
+.showBtn{
+  position:absolute;
+  right:12px;
+  top:50%;
+  transform:translateY(-50%);
+  background:none;
+  border:none;
+  color:#14B8A6;
+  cursor:pointer;
+  font-weight:600;
+}
+
+.signupBtn{
+  width:100%;
+  padding:14px;
+  border:none;
+  border-radius:12px;
+  background:white;
+  color:#14B8A6;
+  font-size:17px;
+  font-weight:700;
+  margin-top:10px;
+  cursor:pointer;
+  transition:all 0.2s;
+}
+.signupBtn:hover{transform:translateY(-2px);}
+.signupBtn:disabled{
+  opacity:0.6;
+  cursor:not-allowed;
+}
+
+.loginLink{
+  margin-top:16px;
+  border:2px solid rgba(255, 255, 255, 0.3);
+  padding:14px;
+  border-radius:12px;
+  text-align:center;
+  background:rgba(255, 255, 255, 0.1);
+  transition:all 0.2s;
+}
+.loginLink:hover{background:rgba(255, 255, 255, 0.2);}
+
+a{
+  color:white;
+  text-decoration:none;
+  display:block;
+}
+
+.error{
+  color:#ff6b6b;
+  text-align:center;
+  margin-bottom:10px;
+  font-size:14px;
+  background:rgba(255, 107, 107, 0.1);
+  padding:10px;
+  border-radius:8px;
+  border:1px solid rgba(255, 107, 107, 0.3);
+  display:none;
+}
+.error.show{display:block;}
+
+</style>
+</head>
+
+<body>
+
+<img src="images/BNHABEEB.png" class="logo" alt="BNHABEEB Logo">
+
+<div class="card">
+
+<div class="title">Create Account</div>
+<div id="error" class="error"></div>
+
+<div class="inputBox"><input id="username" placeholder="Username" autocomplete="username"></div>
+<div class="inputBox"><input id="email" placeholder="Email Address" type="email" autocomplete="email"></div>
+<div class="inputBox"><input id="phone" placeholder="Phone Number e.g 08012345678" type="tel" autocomplete="tel"></div>
+
+<div class="inputBox">
+<input id="password" type="password" placeholder="Password" autocomplete="new-password">
+<button class="showBtn" onclick="toggleField('password',this)">Show</button>
+</div>
+
+<div class="inputBox">
+<input id="pin" type="password" placeholder="4 Digit PIN" maxlength="4" inputmode="numeric" autocomplete="off">
+<button class="showBtn" onclick="toggleField('pin',this)">Show</button>
+</div>
+
+<button id="signupBtn" class="signupBtn">Create Account</button>
+
+<a href="login.html"><div class="loginLink">Already have an account? Login</div></a>
+
+</div>
+
+<script>
+const API = "https://mayconnect-backend-1.onrender.com";
+
+function toggleField(id,btn){
+  const i=document.getElementById(id)
+  if(i.type==="password"){i.type="text";btn.innerText="Hide"}
+  else{i.type="password";btn.innerText="Show"}
+}
+
+function showError(msg){
+  const errorDiv = document.getElementById("error");
+  errorDiv.innerText = msg;
+  errorDiv.classList.add("show");
+}
+
+function hideError(){
+  document.getElementById("error").classList.remove("show");
+}
+
+document.getElementById("signupBtn").onclick = async () => {
+  const username = document.getElementById("username").value.trim();
+  const email = document.getElementById("email").value.trim();
+  const phone = document.getElementById("phone").value.trim();
+  const password = document.getElementById("password").value;
+  const pin = document.getElementById("pin").value;
+  const btn = document.getElementById("signupBtn");
+
+  hideError();
+
+  if (!username || !email || !phone || !password || !pin) {
+    showError("All fields are required");
+    return;
+  }
+  if (pin.length !== 4 || isNaN(pin)) {
+    showError("PIN must be 4 digits");
+    return;
+  }
+  if (password.length < 6) {
+    showError("Password must be at least 6 characters");
+    return;
+  }
+
+  btn.disabled = true;
+  btn.innerText = "Creating...";
+
+  try {
+    const res = await fetch(API + "/api/signup", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ 
+        username, 
+        email, 
+        phone, 
+        password, 
+        pin, 
+        company: "bnhabeeb" 
+      })
+    });
+
+    const data = await res.json();
+
+    if (res.ok) {
+      localStorage.setItem("token", data.token);
+      localStorage.setItem("username", data.username);
+      window.location.href = "dashboard.html";
+    } else {
+      showError(data.message || "Signup failed");
+      btn.disabled = false;
+      btn.innerText = "Create Account";
+    }
+  } catch (e) {
+    showError("Network error. Please try again.");
+    btn.disabled = false;
+    btn.innerText = "Create Account";
+  }
+};
+
+/* AUTO REDIRECT IF LOGGED IN */
+if (localStorage.getItem("token")) {
+  window.location.href = "dashboard.html";
+}
+</script>
+
+</body>
+</html>
