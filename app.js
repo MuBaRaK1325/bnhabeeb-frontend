@@ -437,8 +437,7 @@ function renderPlans() {
 /* ================= BIOMETRIC STATUS - BN HABEEB DATA HUB - FIXED 100% ================= */
 const APP_NAME = 'BN HABEEB DATA HUB';
 const APP_LOGO = '/images/BNHABEEB.png';
-let cachedRegOptions = null;
-let biometricReady = false;
+
 
 // 1. Safe way to get the plugin without import
 const BiometricAuth = window.Capacitor && window.Capacitor.Plugins? window.Capacitor.Plugins.BiometricAuth : null;
