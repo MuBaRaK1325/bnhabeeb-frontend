@@ -1,5 +1,12 @@
 const API = "https://mayconnect-backend-1.onrender.com"; // One backend for all companies
+const isApp = window.Capacitor && window.Capacitor.isNativePlatform();
 
+// Block admin APIs if running in app
+if(isApp) {
+  if(typeof axios !== 'undefined') {
+    axios.defaults.headers.common['X-App-Version'] = '1.0.0';
+  }
+}
 let cachedPlans = [];
 let cachedAdminPlans = [];
 let currentUser = null;
@@ -119,11 +126,14 @@ async function loadDashboard() {
     if (el("usernameDisplay")) el("usernameDisplay").innerText = "Hello " + currentUser.username;
     if (el("companyBadge")) el("companyBadge").innerText = currentUser.company.toUpperCase();
 
-    if (currentUser && currentUser.is_admin === true) {
-      document.querySelectorAll(".adminOnly").forEach(e => e.style.display = "block");
-      if (el("adminWalletBalance")) el("adminWalletBalance").innerText = formatNaira(currentUser.admin_wallet);
-      if (el("adminWalletBalance2")) el("adminWalletBalance2").innerText = formatNaira(currentUser.admin_wallet);
-    }
+  const isApp = window.Capacitor && window.Capacitor.isNativePlatform();
+
+if (currentUser && currentUser.is_admin === true && !isApp) {
+  // Only show admin on WEB, hide on APP
+  document.querySelectorAll(".adminOnly").forEach(e => e.style.display = "block");
+  if (el("adminWalletBalance")) el("adminWalletBalance").innerText = formatNaira(currentUser.admin_wallet);
+  if (el("adminWalletBalance2")) el("adminWalletBalance2").innerText = formatNaira(currentUser.admin_wallet);
+}
 
     initNavigation();
     await loadAccount();
@@ -434,13 +444,18 @@ function renderPlans() {
   });
 }
 
-/* ================= BIOMETRIC STATUS - BN HABEEB DATA HUB - FIXED 100% ================= */
+/* ================= BIOMETRIC STATUS - BN HABEEB DATA HUB - CRASH FIXED ================= */
 const APP_NAME = 'BN HABEEB DATA HUB';
 const APP_LOGO = '/images/BNHABEEB.png';
 
+// 1. SAFE way to get the plugin - won't crash if plugin missing
+let BiometricAuth = null;
+if (window.Capacitor && window.Capacitor.Plugins) {
+  BiometricAuth = window.Capacitor.Plugins.NativeBiometric || null;
+}
 
-// 1. Safe way to get the plugin without import
-const BiometricAuth = window.Capacitor && window.Capacitor.Plugins? window.Capacitor.Plugins.BiometricAuth : null;
+let biometricReady = false;
+let cachedRegOptions = null;
 
 function el(id) { return document.getElementById(id); }
 function getToken() { return localStorage.getItem('token'); }
@@ -490,7 +505,7 @@ async function checkBiometricStatus() {
   const statusEl = el("biometricStatus");
   if (!statusEl ||!enableBtn) return;
 
-  const isNative =!!window.Capacitor &&!!BiometricAuth; // true = APK, false = Web
+  const isNative =!!window.Capacitor &&!!BiometricAuth; // true = APK + plugin installed
 
   enableBtn.disabled = true;
   enableBtn.innerHTML = `<img src="${APP_LOGO}" style="width:20px;height:20px;margin-right:8px;border-radius:3px;object-fit:contain;vertical-align:middle;">Checking...`;
@@ -504,8 +519,8 @@ async function checkBiometricStatus() {
   // ========== PATH 1: APK / ANDROID NATIVE ==========
   if (isNative) {
     try {
-      const result = await BiometricAuth.isBiometryAvailable();
-      if (!result.isAvailable ||!result.strongBiometryAvailable) {
+      const result = await BiometricAuth.isAvailable();
+      if (!result.isAvailable) {
         showDebug("No fingerprint or Face ID enrolled", true);
         enableBtn.style.display = "none";
         return false;
@@ -619,8 +634,13 @@ async function enableBiometric() {
     btn.innerHTML = `<img src="${APP_LOGO}" style="width:20px;height:20px;margin-right:8px;border-radius:3px;object-fit:contain;">Touch sensor...`;
     showDebug('Step 1: Requesting Android Biometric...');
     try {
-      const result = await BiometricAuth.authenticate({ reason: "Enable biometric to secure your account" });
-      if (result.isAuthenticated) {
+      const result = await BiometricAuth.verifyIdentity({
+        reason: "Enable biometric to secure your account",
+        title: APP_NAME,
+        subtitle: "Touch fingerprint to continue",
+        useFallback: true
+      });
+      if (result.isVerified) {
         localStorage.setItem('biometricEnabled', 'true');
         showMsg("Biometric enabled ✓", "success");
         btn.style.display = 'none';
@@ -642,8 +662,8 @@ async function enableBiometric() {
     btn.innerHTML = `<img src="${APP_LOGO}" style="width:20px;height:20px;margin-right:8px;border-radius:3px;object-fit:contain;">Preparing...`;
     showDebug('Step 1: Fetching /register-start...');
     fetch(API + '/api/auth/webauthn/register-start', { method: 'POST', headers: { 'Authorization': 'Bearer ' + getToken() }})
-  .then(r => r.json())
-  .then(data => {
+.then(r => r.json())
+.then(data => {
       if (data.error) throw new Error(data.error);
       data.rp = data.rp || {}; data.rp.id = window.location.hostname;
       cachedRegOptions = data; biometricReady = true;
@@ -652,7 +672,7 @@ async function enableBiometric() {
       btn.style.background = '#14b8b6';
       showDebug('Step 4: Ready! Tap again');
     })
-  .catch(e => {
+.catch(e => {
       showDebug('ERROR Step 2: ' + e.message, true);
       btn.disabled = false; btn.innerHTML = `<img src="${APP_LOGO}" style="width:20px;height:20px;margin-right:8px;border-radius:3px;object-fit:contain;">Enable Fingerprint/Face ID`;
       btn.style.background = '#14b8b6'; biometricReady = false;
@@ -669,20 +689,20 @@ async function enableBiometric() {
       showDebug('Step 5: Calling create...\nRP: ' + publicKey.rp.id);
       let timeoutId = setTimeout(() => { showDebug('TIMEOUT: Popup bai fito ba', true); btn.disabled = false; btn.innerHTML = `<img src="${APP_LOGO}" style="width:20px;height:20px;margin-right:8px;border-radius:3px;object-fit:contain;">Enable Fingerprint/Face ID`; btn.style.background = '#14b8b6'; biometricReady = false; }, 5000);
       navigator.credentials.create({ publicKey })
-    .then(cred => {
+  .then(cred => {
         clearTimeout(timeoutId); if (!cred) throw new Error('User cancelled');
         btn.innerHTML = `<img src="${APP_LOGO}" style="width:20px;height:20px;margin-right:8px;border-radius:3px;object-fit:contain;">Saving...`;
         const credential = { id: cred.id, rawId: bufferEncode(cred.rawId), response: { attestationObject: bufferEncode(cred.response.attestationObject), clientDataJSON: bufferEncode(cred.response.clientDataJSON) }, type: cred.type };
         return fetch(API + '/api/auth/webauthn/register-finish', { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + getToken() }, body: JSON.stringify(credential) });
       })
-    .then(r => r.json())
-    .then(result => {
+  .then(r => r.json())
+  .then(result => {
         if (result.verified === true) {
           showDebug('SUCCESS! Biometric enabled ✓'); btn.style.display = 'none'; biometricReady = false; cachedRegOptions = null;
           setTimeout(() => checkBiometricStatus(), 1500);
         } else { throw new Error(result.error || result.message || 'Backend verification failed'); }
       })
-    .catch(err => { clearTimeout(timeoutId); showDebug('ERROR: ' + err.message, true); btn.disabled = false; btn.innerHTML = `<img src="${APP_LOGO}" style="width:20px;height:20px;margin-right:8px;border-radius:3px;object-fit:contain;">Enable Fingerprint/Face ID`; btn.style.background = '#14b8b6'; biometricReady = false; cachedRegOptions = null; });
+  .catch(err => { clearTimeout(timeoutId); showDebug('ERROR: ' + err.message, true); btn.disabled = false; btn.innerHTML = `<img src="${APP_LOGO}" style="width:20px;height:20px;margin-right:8px;border-radius:3px;object-fit:contain;">Enable Fingerprint/Face ID`; btn.style.background = '#14b8b6'; biometricReady = false; cachedRegOptions = null; });
     } catch (e) { showDebug('ERROR: ' + e.message, true); btn.disabled = false; biometricReady = false; }
   }
 }
@@ -697,8 +717,13 @@ async function loginWithBiometric() {
     btn.disabled = true;
     btn.innerHTML = `<img src="${APP_LOGO}" style="width:20px;height:20px;margin-right:8px;border-radius:3px;object-fit:contain;">Touch sensor...`;
     try {
-      const result = await BiometricAuth.authenticate({ reason: "Unlock Investifi" });
-      if (result.isAuthenticated) {
+      const result = await BiometricAuth.verifyIdentity({
+        reason: "Unlock BN HABEEB DATA HUB",
+        title: APP_NAME,
+        subtitle: "Touch fingerprint to continue",
+        useFallback: true
+      });
+      if (result.isVerified) {
         const token = getToken();
         if(token) {
           showMsg("Unlocked!", "success");
@@ -742,7 +767,7 @@ if (document.readyState === 'loading') {
   initBiometricProfile();
 }
 /* ================= END BIOMETRIC ================= */
-/* ================= PURCHASE MODAL ================= */
+/* ================= PURCHASE MODAL - CRASH FIXED ================= */
 async function openPurchaseModal(planId, planName, planPrice) {
   selectedPlanId = planId;
   selectedPhone = el('dataPhone')?.value;
@@ -759,15 +784,23 @@ async function openPurchaseModal(planId, planName, planPrice) {
   if (pinTitle) pinTitle.innerText = 'Confirm Purchase';
   if (pinDetails) pinDetails.innerHTML = `<strong>${planName}</strong><br>${formatNaira(planPrice)}<br>To: ${selectedPhone}`;
 
-  try {
-    const res = await fetch(API + '/api/auth/webauthn/check-enabled', {
-      headers: { 'Authorization': 'Bearer ' + getToken() }
-    });
-    const data = await res.json();
-    if (bioBtn) bioBtn.style.display = data.enabled ? 'flex' : 'none';
-  } catch (e) {
-    console.log('Biometric check failed:', e);
-    if (bioBtn) bioBtn.style.display = 'none';
+  // SAFE biometric check
+  if (bioBtn) {
+    const isWebAuthn = window.PublicKeyCredential && window.isSecureContext;
+    if (!isWebAuthn) {
+      bioBtn.style.display = 'none';
+    } else {
+      try {
+        const res = await fetch(API + '/api/auth/webauthn/check-enabled', {
+          headers: { 'Authorization': 'Bearer ' + getToken() }
+        });
+        const data = await res.json();
+        bioBtn.style.display = data.enabled ? 'flex' : 'none';
+      } catch (e) {
+        console.log('Biometric check failed:', e);
+        bioBtn.style.display = 'none';
+      }
+    }
   }
 
   openModal('pinModal');
@@ -789,12 +822,17 @@ function openAirtimePin() {
   if (pinTitle) pinTitle.innerText = 'Confirm Airtime';
   if (pinDetails) pinDetails.innerHTML = `<strong>${airtimeNetwork.toUpperCase()} Airtime</strong><br>${formatNaira(amount)}<br>To: ${phone}`;
 
-  fetch(API + '/api/auth/webauthn/check-enabled', {
-    headers: { 'Authorization': 'Bearer ' + getToken() }
-  }).then(r => r.json()).then(data => {
-    const bioBtn = el('biometricPurchaseBtn');
-    if (bioBtn) bioBtn.style.display = data.enabled ? 'flex' : 'none';
-  }).catch(() => {});
+  const bioBtn = el('biometricPurchaseBtn');
+  const isWebAuthn = window.PublicKeyCredential && window.isSecureContext;
+  if (!isWebAuthn) {
+    if (bioBtn) bioBtn.style.display = 'none';
+  } else {
+    fetch(API + '/api/auth/webauthn/check-enabled', {
+      headers: { 'Authorization': 'Bearer ' + getToken() }
+    }).then(r => r.json()).then(data => {
+      if (bioBtn) bioBtn.style.display = data.enabled ? 'flex' : 'none';
+    }).catch(() => { if (bioBtn) bioBtn.style.display = 'none'; });
+  }
 
   openModal('pinModal');
   setTimeout(() => el('pinInput')?.focus(), 100);
@@ -812,6 +850,11 @@ function confirmPurchase() {
 async function purchaseWithBiometric() {
   if (!selectedPhone) return showMsg('Enter phone number first', 'error');
 
+  // SAFETY CHECK: Only run if WebAuthn exists
+  if (!window.PublicKeyCredential || !window.isSecureContext) {
+    return showMsg('Biometric not supported on this device/browser', 'error');
+  }
+
   try {
     closeModal('pinModal');
     showLoader('Verify fingerprint...');
@@ -822,9 +865,9 @@ async function purchaseWithBiometric() {
     }).then(r => r.json());
 
     hideLoader();
-
     if (!start || start.error) throw new Error(start.error || 'Failed to start verification');
 
+    // decode challenge
     start.challenge = bufferDecode(start.challenge);
     start.allowCredentials = (start.allowCredentials || []).map(cred => ({
       ...cred,
@@ -867,6 +910,7 @@ async function purchaseWithBiometric() {
     }
   }
 }
+/* ================= END PURCHASE MODAL ================= */
 
 /* ================= BUY DATA - WITH BNHABEEB RECEIPT ================= */
 async function buyData(pin) {
@@ -1652,6 +1696,15 @@ function logout() {
   localStorage.clear();
   window.location.href = "login.html";
 }
-
+// Disable all admin functions in app
+if(isApp) {
+  window.loadAdminTransactions = () => console.log("Admin disabled in app");
+  window.loadAdminUsers = () => console.log("Admin disabled in app");
+  window.loadAdminPlans = () => console.log("Admin disabled in app");
+  window.addPlan = () => {};
+  window.editPlan = () => {};
+  window.reverseTransaction = () => {};
+  window.forceDeductTransaction = () => {};
+}
 /* ================= START ================= */
 document.addEventListener("DOMContentLoaded", loadDashboard);

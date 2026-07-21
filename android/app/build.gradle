@@ -1,35 +1,18 @@
-configurations.all {
-    resolutionStrategy {
-        force 'androidx.core:core:1.13.1'
-        force 'androidx.core:core-ktx:1.13.1'
-        force 'androidx.activity:activity:1.9.2'  // Was 1.11.0
-        force 'androidx.core:core-splashscreen:1.0.1'
-        force 'org.jetbrains.kotlin:kotlin-stdlib:1.8.22'
-        force 'org.jetbrains.kotlin:kotlin-stdlib-jdk7:1.8.22'
-        force 'org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.8.22'
-    }
-}
-
 apply plugin: 'com.android.application'
 
 android {
-    namespace = "com.bnhabeeb.datahub"
-    compileSdk = rootProject.ext.compileSdkVersion
-    
+    namespace "com.bnhabeeb.datahub"
+    compileSdk rootProject.ext.compileSdkVersion
+
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_17
         targetCompatibility JavaVersion.VERSION_17
     }
 
-    tasks.withType(JavaCompile).configureEach {
-        sourceCompatibility = JavaVersion.VERSION_17
-        targetCompatibility = JavaVersion.VERSION_17
-    }
-
     defaultConfig {
         applicationId "com.bnhabeeb.datahub"
-        minSdkVersion rootProject.ext.minSdkVersion
-        targetSdkVersion rootProject.ext.targetSdkVersion
+        minSdk rootProject.ext.minSdkVersion
+        targetSdk rootProject.ext.targetSdkVersion
         versionCode 1
         versionName "1.0"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
@@ -42,6 +25,11 @@ android {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
+    }
+    
+    // Fix for old flatDir warning
+    lintOptions {
+        disable 'Deprecated'
     }
 }
 

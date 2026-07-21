@@ -1,0 +1,12 @@
+diff --git a/node_modules/capacitor-biometric-auth/android/src/main/AndroidManifest.xml b/node_modules/capacitor-biometric-auth/android/src/main/AndroidManifest.xml
+index 286cebf..3700738 100644
+--- a/node_modules/capacitor-biometric-auth/android/src/main/AndroidManifest.xml
++++ b/node_modules/capacitor-biometric-auth/android/src/main/AndroidManifest.xml
+@@ -1,6 +1,6 @@
+ 
+   <manifest xmlns:android="http://schemas.android.com/apk/res/android"
+-      package="com.ahm.capacitor.biometric.capacitorbiometricauth">
++
+ 
+     <!-- Step 1: Add the following permission to the app  -->
+     <uses-permission android:name="android.permission.USE_BIOMETRIC" />

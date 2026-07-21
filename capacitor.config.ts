@@ -2,8 +2,8 @@ import type { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
   appId: 'com.bnhabeeb.datahub',
-  appName: 'BNHABEEB Data Hub',
-  webDir: 'dist-app',  // saka wannan
+  appName: 'BNHABEEB DATA HUB',
+  webDir: 'dist' // <- now this folder exists
 };
 
 export default config;
