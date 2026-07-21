@@ -14,3 +14,20 @@ android/.idea
 android/app/release
 node_modules/
 .DS_Store
+# Ignore everything Android/Gradle
+android/
+.gradle/
+build/
+*.apk
+*.aab
+local.properties
+
+# Ignore node_modules
+node_modules/
+
+# Keep only web files
+!www/
+!index.html
+!assets/
+!js/
+!css/

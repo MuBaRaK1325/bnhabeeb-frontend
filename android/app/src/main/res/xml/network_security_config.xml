@@ -1,7 +1,0 @@
-<?xml version="1.0" encoding="utf-8"?>
-<network-security-config>
-    <domain-config cleartextTrafficPermitted="false">
-        <domain includeSubdomains="true">mayconnect-backend-1.onrender.com</domain>
-        <domain includeSubdomains="true">bnhabeebdtahub.com.ng</domain>
-    </domain-config>
-</network-security-config>
