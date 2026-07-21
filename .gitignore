@@ -1,3 +1,16 @@
 node_modules/
 package-lock.json
 resize.py
+# Gradle
+.gradle/
+build/
+*/build/
+local.properties
+*.apk
+*.aab
+
+# Capacitor
+android/.idea
+android/app/release
+node_modules/
+.DS_Store
