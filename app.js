@@ -454,8 +454,7 @@ if (window.Capacitor && window.Capacitor.Plugins) {
   BiometricAuth = window.Capacitor.Plugins.NativeBiometric || null;
 }
 
-let biometricReady = false;
-let cachedRegOptions = null;
+
 
 function el(id) { return document.getElementById(id); }
 function getToken() { return localStorage.getItem('token'); }
