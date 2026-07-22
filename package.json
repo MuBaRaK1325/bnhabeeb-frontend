@@ -1,11 +1,10 @@
 {
   "name": "bnhabeeb-froontend",
   "version": "1.0.0",
-  "description": "",
-  "main": "app.js",
+  "description": "BNHABEEB Frontend",
+  "main": "index.html",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "postinstall": "patch-package"
+    "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
     "type": "git",
@@ -18,13 +17,5 @@
     "url": "https://github.com/MuBaRaK1325/bnhabeeb-frontend/issues"
   },
   "homepage": "https://github.com/MuBaRaK1325/bnhabeeb-frontend#readme",
-  "dependencies": {
-    "@capacitor/android": "^6.2.1",
-    "@capacitor/cli": "^8.4.1",
-    "@capacitor/core": "^6.2.1"
-  },
-  "devDependencies": {
-    "patch-package": "^8.0.1",
-    "postinstall-postinstall": "^2.1.0"
-  }
+  "dependencies": {}
 }
