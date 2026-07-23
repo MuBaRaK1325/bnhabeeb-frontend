@@ -444,14 +444,14 @@ function renderPlans() {
   });
 }
 
-/* ================= BIOMETRIC STATUS - BN HABEEB DATA HUB - CRASH FIXED ================= */
+/* ================= BIOMETRIC STATUS - BN HABEEB DATA HUB - DUAL MODE FINAL ================= */
 const APP_NAME = 'BN HABEEB DATA HUB';
 const APP_LOGO = '/images/BNHABEEB.png';
 
-// 1. SAFE way to get the plugin - won't crash if plugin missing
+// 1. SAFE way to get the plugin - Capgo uses BiometricAuth
 let BiometricAuth = null;
 if (window.Capacitor && window.Capacitor.Plugins) {
-  BiometricAuth = window.Capacitor.Plugins.NativeBiometric || null;
+  BiometricAuth = window.Capacitor.Plugins.BiometricAuth || null; // FIXED NAME
 }
 
 
@@ -515,7 +515,7 @@ async function checkBiometricStatus() {
   enableBtn.style.background = '#14b8b6';
   showDebug("Checking biometric support...");
 
-  // ========== PATH 1: APK / ANDROID NATIVE ==========
+  // ========== PATH 1: APK / ANDROID NATIVE - CAPGO ==========
   if (isNative) {
     try {
       const result = await BiometricAuth.isAvailable();
@@ -546,7 +546,7 @@ async function checkBiometricStatus() {
     }
   }
 
-  // ========== PATH 2: WEB / CHROME ==========
+  // ========== PATH 2: WEB / CHROME - WEBAUTHN ==========
   if (!window.isSecureContext) {
     showDebug("HTTPS required for biometric", true);
     enableBtn.style.display = "none";
@@ -627,23 +627,22 @@ async function enableBiometric() {
   if (!btn) return;
   const isNative =!!window.Capacitor &&!!BiometricAuth;
 
-  // ========== APK / NATIVE ANDROID ==========
+  // ========== APK / NATIVE ANDROID - CAPGO ==========
   if (isNative) {
     btn.disabled = true;
     btn.innerHTML = `<img src="${APP_LOGO}" style="width:20px;height:20px;margin-right:8px;border-radius:3px;object-fit:contain;">Touch sensor...`;
     showDebug('Step 1: Requesting Android Biometric...');
     try {
-      const result = await BiometricAuth.verifyIdentity({
+      const result = await BiometricAuth.verify({ // FIXED: verify not verifyIdentity
         reason: "Enable biometric to secure your account",
         title: APP_NAME,
-        subtitle: "Touch fingerprint to continue",
-        useFallback: true
       });
-      if (result.isVerified) {
+      if (result.isVerified) { // FIXED: isVerified
         localStorage.setItem('biometricEnabled', 'true');
         showMsg("Biometric enabled ✓", "success");
         btn.style.display = 'none';
         showDebug('SUCCESS! Biometric enabled ✓');
+        checkBiometricStatus();
       } else {
         throw new Error('Cancelled');
       }
@@ -688,20 +687,20 @@ async function enableBiometric() {
       showDebug('Step 5: Calling create...\nRP: ' + publicKey.rp.id);
       let timeoutId = setTimeout(() => { showDebug('TIMEOUT: Popup bai fito ba', true); btn.disabled = false; btn.innerHTML = `<img src="${APP_LOGO}" style="width:20px;height:20px;margin-right:8px;border-radius:3px;object-fit:contain;">Enable Fingerprint/Face ID`; btn.style.background = '#14b8b6'; biometricReady = false; }, 5000);
       navigator.credentials.create({ publicKey })
-  .then(cred => {
+ .then(cred => {
         clearTimeout(timeoutId); if (!cred) throw new Error('User cancelled');
         btn.innerHTML = `<img src="${APP_LOGO}" style="width:20px;height:20px;margin-right:8px;border-radius:3px;object-fit:contain;">Saving...`;
         const credential = { id: cred.id, rawId: bufferEncode(cred.rawId), response: { attestationObject: bufferEncode(cred.response.attestationObject), clientDataJSON: bufferEncode(cred.response.clientDataJSON) }, type: cred.type };
         return fetch(API + '/api/auth/webauthn/register-finish', { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + getToken() }, body: JSON.stringify(credential) });
       })
-  .then(r => r.json())
-  .then(result => {
+ .then(r => r.json())
+ .then(result => {
         if (result.verified === true) {
           showDebug('SUCCESS! Biometric enabled ✓'); btn.style.display = 'none'; biometricReady = false; cachedRegOptions = null;
           setTimeout(() => checkBiometricStatus(), 1500);
         } else { throw new Error(result.error || result.message || 'Backend verification failed'); }
       })
-  .catch(err => { clearTimeout(timeoutId); showDebug('ERROR: ' + err.message, true); btn.disabled = false; btn.innerHTML = `<img src="${APP_LOGO}" style="width:20px;height:20px;margin-right:8px;border-radius:3px;object-fit:contain;">Enable Fingerprint/Face ID`; btn.style.background = '#14b8b6'; biometricReady = false; cachedRegOptions = null; });
+ .catch(err => { clearTimeout(timeoutId); showDebug('ERROR: ' + err.message, true); btn.disabled = false; btn.innerHTML = `<img src="${APP_LOGO}" style="width:20px;height:20px;margin-right:8px;border-radius:3px;object-fit:contain;">Enable Fingerprint/Face ID`; btn.style.background = '#14b8b6'; biometricReady = false; cachedRegOptions = null; });
     } catch (e) { showDebug('ERROR: ' + e.message, true); btn.disabled = false; biometricReady = false; }
   }
 }
@@ -711,18 +710,16 @@ async function loginWithBiometric() {
   if (!btn) return;
   const isNative =!!window.Capacitor &&!!BiometricAuth;
 
-  // ========== APK / NATIVE ANDROID ==========
+  // ========== APK / NATIVE ANDROID - CAPGO ==========
   if (isNative) {
     btn.disabled = true;
     btn.innerHTML = `<img src="${APP_LOGO}" style="width:20px;height:20px;margin-right:8px;border-radius:3px;object-fit:contain;">Touch sensor...`;
     try {
-      const result = await BiometricAuth.verifyIdentity({
+      const result = await BiometricAuth.verify({ // FIXED: verify not verifyIdentity
         reason: "Unlock BN HABEEB DATA HUB",
         title: APP_NAME,
-        subtitle: "Touch fingerprint to continue",
-        useFallback: true
       });
-      if (result.isVerified) {
+      if (result.isVerified) { // FIXED: isVerified
         const token = getToken();
         if(token) {
           showMsg("Unlocked!", "success");

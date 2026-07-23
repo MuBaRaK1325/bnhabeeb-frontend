@@ -17,5 +17,7 @@
     "url": "https://github.com/MuBaRaK1325/bnhabeeb-frontend/issues"
   },
   "homepage": "https://github.com/MuBaRaK1325/bnhabeeb-frontend#readme",
-  "dependencies": {}
+  "dependencies": {
+    "@capgo/capacitor-native-biometric": "^8.6.2"
+  }
 }
