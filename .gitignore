@@ -31,3 +31,9 @@ node_modules/
 !assets/
 !js/
 !css/
+dist-app
+dist/
+android/
+node_modules/
+.env
+.DS_Store
