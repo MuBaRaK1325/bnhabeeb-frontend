@@ -5,6 +5,13 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>BNHABEEB VTU Dashboard</title>
 
+<!-- FORCE CHROME UA - MUST BE FIRST -->
+<script>
+  Object.defineProperty(navigator, 'userAgent', {
+    get: () => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
+  });
+</script>
+
 <!-- PWA TAGS -->
 <link rel="manifest" href="/manifest.json">
 <meta name="theme-color" content="#14B8A6">
@@ -14,7 +21,6 @@
 <meta name="apple-mobile-web-app-title" content="BNHABEEB">
 <link rel="apple-touch-icon" href="/images/BNHABEEB-192.png">
 <link rel="icon" href="/images/BNHABEEB.png">
-</script>
 
 <style>
 :root{
@@ -176,63 +182,109 @@ margin-bottom:15px;
 
 /* NETWORK */
 .networkGrid{
-display:grid;
-grid-template-columns:repeat(3,1fr);
-gap:12px;
-margin-top:15px;
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:12px;
+  margin-top:15px;
 }
 
 .networkItem{
-background:var(--card);
-backdrop-filter:blur(10px);
-border:1px solid var(--glass-border);
-padding:12px;
-border-radius:50%;
-text-align:center;
-cursor:pointer;
-border:3px solid transparent;
-aspect-ratio:1;
-display:flex;
-align-items:center;
-justify-content:center;
-transition:0.2s;
+  background:var(--card);
+  backdrop-filter:blur(10px);
+  border:1px solid var(--glass-border);
+  padding:12px;
+  border-radius:50%;
+  text-align:center;
+  cursor:pointer;
+  border:3px solid transparent;
+  aspect-ratio:1;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  transition:0.2s;
 }
 
 .networkItem.active{
-border:3px solid var(--primary);
-transform:scale(1.05);
-box-shadow:0 0 20px rgba(20, 184, 166, 0.4);
+  border:3px solid var(--primary);
+  transform:scale(1.05);
+  box-shadow:0 0 20px rgba(20, 184, 166, 0.4); /* Teal glow */
 }
 
 .networkItem img{
-width:45px;
-height:45px;
-border-radius:50%;
-object-fit:cover;
+  width:45px;
+  height:45px;
+  border-radius:50%;
+  object-fit:cover;
 }
 
 /* PLAN */
 .planItem{
-background:var(--card);
-backdrop-filter:blur(10px);
-border:1px solid var(--glass-border);
-padding:12px;
-border-radius:10px;
-margin-top:10px;
-cursor:pointer;
-position:relative;
-transition:0.2s;
+  background:var(--card);
+  backdrop-filter:blur(10px);
+  border:1px solid var(--glass-border);
+  padding:12px;
+  border-radius:10px;
+  margin-top:10px;
+  cursor:pointer;
+  position:relative;
+  transition:0.2s;
 }
-.planItem:active{background:rgba(255, 255, 255, 0.2);}
+.planItem:active{
+  background:rgba(20, 184, 166, 0.1); /* Teal tint on tap */
+}
 
 .topUserBadge{
-position:absolute;
-top:8px;
-right:8px;
-background:var(--success);
-padding:2px 6px;
-border-radius:4px;
-font-size:10px;
+  position:absolute;
+  top:8px;
+  right:8px;
+  background:var(--success);
+  padding:2px 6px;
+  border-radius:4px;
+  font-size:10px;
+  font-weight:600;
+}
+
+/* PLAN TABS */
+.planTabs { 
+  display: flex; 
+  gap: 8px; 
+  margin-bottom: 14px; 
+  overflow-x: auto; 
+  padding-bottom: 4px;
+}
+.planTabs::-webkit-scrollbar { display: none; } /* hide scroll on mobile */
+
+.planTab { 
+  padding: 8px 16px; 
+  border: 1px solid var(--glass-border); 
+  border-radius: 20px; 
+  background: rgba(20, 184, 166, 0.05); /* Light teal bg */
+  color: var(--text);
+  cursor: pointer; 
+  font-weight: 600;
+  font-size: 13px;
+  white-space: nowrap;
+  transition: 0.2s;
+  backdrop-filter: blur(10px);
+}
+.planTab.active { 
+  background: #14b8a6; /* Teal */
+  color: #fff; 
+  border-color: #14b8a6; 
+  box-shadow: 0 0 10px rgba(20, 184, 166, 0.3);
+}
+.planTab:active { transform: scale(0.95); }
+
+.regularUserBadge {
+  position:absolute;
+  top:8px;
+  right:8px;
+  background:#14b8a6; /* Teal instead of blue */
+  padding:2px 6px;
+  border-radius:4px;
+  font-size:10px;
+  color:#fff; /* White text for teal bg */
+  font-weight:600;
 }
 
 /* TRANSACTION */
@@ -862,16 +914,19 @@ box-shadow:0 0 40px rgba(20,184,166,0.3);
 
 <!-- DATA -->
 <section id="data" class="section">
-<button onclick="showSection('home')" class="backBtn">⬅ Back</button>
-<h3>Select Network</h3>
-<div class="networkGrid">
-<div class="networkItem" onclick="selectNetwork('mtn', this)"><img src="images/mtn.png" alt="MTN"></div>
-<div class="networkItem" onclick="selectNetwork('glo', this)"><img src="images/glo.png" alt="GLO"></div>
-<div class="networkItem" onclick="selectNetwork('airtel', this)"><img src="images/airtel.png" alt="AIRTEL"></div>
-</div>
+  <button onclick="showSection('home')" class="backBtn">⬅ Back</button>
+  <h3>Select Network</h3>
+  
+  <div class="networkGrid">
+    <div class="networkItem" onclick="selectNetwork('mtn', this)"><img src="images/mtn.png" alt="MTN"></div>
+    <div class="networkItem" onclick="selectNetwork('glo', this)"><img src="images/glo.png" alt="GLO"></div>
+    <div class="networkItem" onclick="selectNetwork('airtel', this)"><img src="images/airtel.png" alt="AIRTEL"></div>
+  </div>
 
-<input id="dataPhone" type="tel" placeholder="Phone Number">
-<div id="planList"></div>
+  <input id="dataPhone" type="tel" placeholder="Phone Number">
+
+  <div id="planTabs" class="planTabs"></div> <!-- THIS IS NEW - TABS GO HERE -->
+  <div id="planList"></div>
 </section>
 
 <!-- AIRTIME -->
